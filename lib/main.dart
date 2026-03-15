@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 
-import 'package:kairo/features/auth/screens/login_screen.dart';
-import 'package:kairo/features/auth/screens/register_screen.dart';
+import 'package:kairo/features/auth/screens/auth_screen.dart';
+import 'package:kairo/features/auth/screens/forgot_password_screen.dart';
 
 void main() {
   runApp(const KairoApp());
@@ -22,10 +22,10 @@ class KairoApp extends StatelessWidget {
         colorSchemeSeed: AppColors.primary,
       ),
 
-      initialRoute: '/login',
+      initialRoute: '/auth',
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
+        '/auth': (context) => const AuthScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
       },
     );
   }
