@@ -1,0 +1,1 @@
+const int RESEND_PASSWORD_TIMER = 20;

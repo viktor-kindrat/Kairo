@@ -42,7 +42,7 @@ class _AuthScreenState extends State<AuthScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AuthHeader(),
+              const AuthHeader(backButtonRemoved: true),
               const SizedBox(height: 40),
 
               KairoHeadline(

@@ -7,6 +7,7 @@ import 'package:kairo/core/widgets/kairo_headline.dart';
 import 'package:kairo/core/widgets/kairo_info_card.dart';
 import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/features/auth/screens/check_inbox_screen.dart';
+import 'package:kairo/features/auth/services/auth_service.dart';
 import 'package:kairo/features/auth/widgets/auth_footer.dart';
 import 'package:kairo/features/auth/widgets/auth_header.dart';
 
@@ -24,12 +25,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   void _sendResetLink() async {
     final email = _emailController.text.trim();
-    final isEmailValidationFailed = email.isEmpty || !isEmailValid(email);
 
-    if (isEmailValidationFailed) {
-      setState(() {
-        _errorText = 'Please enter a valid email address.';
-      });
+    if (email.isEmpty || !isEmailValid(email)) {
+      setState(() => _errorText = 'Please enter a valid email address.');
       return;
     }
 
@@ -38,21 +36,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _isLoading = true;
     });
 
-    // TODO: replace with real API call
-    await Future<void>.delayed(const Duration(seconds: 2));
+    final success = await AuthService.sendPasswordResetEmail(email);
 
     if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
 
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => CheckInboxScreen(email: email),
-      ),
-    );
+    if (success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (context) => CheckInboxScreen(email: email),
+        ),
+      );
+    } else {
+      setState(() => _errorText = 'Something went wrong. Try again later.');
+    }
   }
 
   @override
