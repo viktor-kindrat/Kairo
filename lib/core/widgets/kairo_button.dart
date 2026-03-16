@@ -40,8 +40,10 @@ class KairoButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(context.sp(16)),
             ),
 
-            disabledBackgroundColor: AppColors.accentBlack.withOpacity(0.7),
-            disabledForegroundColor: Colors.white.withOpacity(0.8),
+            disabledBackgroundColor: AppColors.accentBlack.withValues(
+              alpha: 0.7,
+            ),
+            disabledForegroundColor: Colors.white.withValues(alpha: 0.8),
           );
 
     final content = Row(

@@ -1,1 +1,1 @@
-const int RESEND_PASSWORD_TIMER = 20;
+const int resendPasswordTimer = 20;

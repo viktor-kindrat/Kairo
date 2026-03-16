@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/kairo_section_header.dart';
 import 'package:kairo/features/profile/widgets/profile_settings_tile.dart';
-import 'package:kairo/core/utils/responsive_utils.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

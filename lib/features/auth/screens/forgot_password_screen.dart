@@ -80,7 +80,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const KairoHeadline(
                 headline: 'Reset Password.',
                 subHeadline:
-                    'Enter your account email and we\'ll send you a secure link to reset your password.',
+                    'Enter your account email and we\'ll send you a secure '
+                    'link to reset your password.',
               ),
 
               const SizedBox(height: 32),
@@ -117,7 +118,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               const KairoInfoCard(
                 text:
-                    'The reset link expires in 15 minutes for your security. Check your spam folder if you don\'t see it.',
+                    'The reset link expires in 15 minutes for your security. '
+                    'Check your spam folder if you don\'t see it.',
                 boldText: '15 minutes',
               ),
             ],

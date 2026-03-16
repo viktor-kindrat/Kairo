@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/core/widgets/text_splitter.dart';
 import 'package:kairo/features/auth/widgets/auth_footer.dart';
-import 'package:kairo/core/utils/responsive_utils.dart';
 
 class SignUpForm extends StatelessWidget {
   final VoidCallback onSwitchTab;

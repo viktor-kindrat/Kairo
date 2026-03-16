@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_headline.dart';
 import 'package:kairo/core/widgets/kairo_tabs.dart';
 import 'package:kairo/features/auth/widgets/auth_header.dart';
 import 'package:kairo/features/auth/widgets/sign_in_form.dart';
 import 'package:kairo/features/auth/widgets/sign_up_form.dart';
-import 'package:kairo/core/utils/responsive_utils.dart';
 
 class AuthScreen extends StatefulWidget {
   final bool showSignUpInitially;

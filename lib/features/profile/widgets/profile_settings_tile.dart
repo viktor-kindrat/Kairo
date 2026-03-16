@@ -29,7 +29,7 @@ class ProfileSettingsTile extends StatelessWidget {
       leading: Container(
         padding: EdgeInsets.all(context.sp(8)),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.05),
+          color: AppColors.primary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(context.sp(10)),
         ),
         child: Icon(icon, color: AppColors.primary, size: context.sp(20)),

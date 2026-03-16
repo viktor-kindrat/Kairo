@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:kairo/core/widgets/kairo_pill.dart';
 import 'package:kairo/core/widgets/kairo_headline.dart';
+import 'package:kairo/core/widgets/kairo_pill.dart';
 
 class CheckInboxHeading extends StatelessWidget {
   final String email;

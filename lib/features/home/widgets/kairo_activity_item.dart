@@ -16,7 +16,7 @@ class KairoActivityItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: isActive ? const Color(0xFFF3EFFF) : Colors.white,
         borderRadius: BorderRadius.circular(20),

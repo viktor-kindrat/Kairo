@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_icon_button.dart';
 import 'package:kairo/core/widgets/kairo_pill.dart';
 import 'package:kairo/core/widgets/kairo_section_header.dart';
 import 'package:kairo/features/home/widgets/focus_progress_item.dart';
 import 'package:kairo/features/home/widgets/home_timer_card.dart';
 import 'package:kairo/features/home/widgets/manual_override_grid.dart';
-import 'package:kairo/core/utils/responsive_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

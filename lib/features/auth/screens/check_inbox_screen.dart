@@ -18,7 +18,7 @@ class CheckInboxScreen extends StatefulWidget {
 }
 
 class _CheckInboxScreenState extends State<CheckInboxScreen> {
-  int _secondsRemaining = RESEND_PASSWORD_TIMER;
+  int _secondsRemaining = resendPasswordTimer;
   Timer? _timer;
 
   @override
@@ -28,7 +28,7 @@ class _CheckInboxScreenState extends State<CheckInboxScreen> {
   }
 
   void _startTimer() {
-    setState(() => _secondsRemaining = RESEND_PASSWORD_TIMER);
+    setState(() => _secondsRemaining = resendPasswordTimer);
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
