@@ -11,7 +11,7 @@ class KairoStepsList extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F8FD), // Твій фірмовий світло-фіолетовий
+        color: const Color(0xFFF8F8FD),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -23,7 +23,6 @@ class KairoStepsList extends StatelessWidget {
             padding: EdgeInsets.only(bottom: idx == steps.length - 1 ? 0 : 20),
             child: Row(
               children: [
-                // Кружечок з номером
                 Container(
                   width: 24,
                   height: 24,
@@ -45,7 +44,7 @@ class KairoStepsList extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Текст кроку
+
                 Expanded(
                   child: Text(
                     text,

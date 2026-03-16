@@ -39,7 +39,7 @@ class KairoButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(context.sp(16)),
             ),
-            // Додаємо колір для стану disabled, щоб кнопка не ставала просто сірою
+
             disabledBackgroundColor: AppColors.accentBlack.withOpacity(0.7),
             disabledForegroundColor: Colors.white.withOpacity(0.8),
           );
