@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:kairo/core/widgets/kairo_email_pill.dart';
+import 'package:kairo/core/widgets/kairo_pill.dart';
 import 'package:kairo/core/widgets/kairo_headline.dart';
 
 class CheckInboxHeading extends StatelessWidget {
@@ -24,7 +24,7 @@ class CheckInboxHeading extends StatelessWidget {
               subHeadline: 'We\'ve sent a reset link to',
             ),
 
-            KairoEmailPill(email: email),
+            KairoPill(icon: Icons.email_outlined, text: email),
           ],
         ),
       ],

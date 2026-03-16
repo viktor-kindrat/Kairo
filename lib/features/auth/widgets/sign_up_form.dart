@@ -35,7 +35,7 @@ class SignUpForm extends StatelessWidget {
             KairoButton(
               text: 'Sign Up',
               onPressed: () {
-                Navigator.pushReplacementNamed(context, '/home');
+                Navigator.pushReplacementNamed(context, '/main');
               },
             ),
 

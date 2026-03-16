@@ -6,6 +6,7 @@ class KairoButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final bool isOutlined;
+  final bool fullWidth;
   final Widget? icon;
 
   const KairoButton({
@@ -14,6 +15,7 @@ class KairoButton extends StatelessWidget {
     super.key,
     this.isLoading = false,
     this.isOutlined = false,
+    this.fullWidth = true,
     this.icon,
   });
 
@@ -21,7 +23,7 @@ class KairoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = isOutlined
         ? OutlinedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 56),
+            minimumSize: Size(fullWidth ? double.infinity : 0, 56),
             backgroundColor: Colors.white,
             side: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
             shape: RoundedRectangleBorder(
@@ -32,7 +34,7 @@ class KairoButton extends StatelessWidget {
             backgroundColor: AppColors.accentBlack,
             foregroundColor: Colors.white,
             elevation: 0,
-            minimumSize: const Size(double.infinity, 56),
+            minimumSize: Size(fullWidth ? double.infinity : 0, 56),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -42,6 +44,7 @@ class KairoButton extends StatelessWidget {
           );
 
     final content = Row(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (isLoading) ...[

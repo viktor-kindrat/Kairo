@@ -3,6 +3,7 @@ import 'package:kairo/core/theme/app_colors.dart';
 
 import 'package:kairo/features/auth/screens/auth_screen.dart';
 import 'package:kairo/features/auth/screens/forgot_password_screen.dart';
+import 'package:kairo/features/main/main_screen.dart';
 
 void main() {
   runApp(const KairoApp());
@@ -26,6 +27,7 @@ class KairoApp extends StatelessWidget {
       routes: {
         '/auth': (context) => const AuthScreen(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
+        '/main': (context) => const MainScreen(),
       },
     );
   }

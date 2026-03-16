@@ -45,7 +45,7 @@ class SignInForm extends StatelessWidget {
         KairoButton(
           text: 'Log In',
           onPressed: () {
-            Navigator.pushReplacementNamed(context, '/home');
+            Navigator.pushReplacementNamed(context, '/main');
           },
         ),
         const SizedBox(height: 32),
