@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class KairoIconButton extends StatelessWidget {
   final Widget icon;
@@ -19,15 +20,18 @@ class KairoIconButton extends StatelessWidget {
       dimension: size,
       child: Material(
         color: AppColors.background,
-        shape: const CircleBorder(
-          side: BorderSide(color: AppColors.border, width: 4),
+        shape: CircleBorder(
+          side: BorderSide(color: AppColors.border, width: context.sp(1)),
         ),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onPressed,
           child: Center(
             child: IconTheme(
-              data: const IconThemeData(color: AppColors.textLight, size: 28),
+              data: IconThemeData(
+                color: AppColors.textLight,
+                size: context.sp(28),
+              ),
               child: icon,
             ),
           ),

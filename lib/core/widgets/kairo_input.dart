@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class KairoInput extends StatefulWidget {
   final String hintText;
@@ -36,17 +37,21 @@ class _KairoInputState extends State<KairoInput> {
       controller: widget.controller,
       obscureText: _isObscured,
       keyboardType: widget.keyboardType,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppColors.textDark,
-        fontSize: 16,
+        fontSize: context.sp(16),
         fontWeight: FontWeight.w400,
       ),
       decoration: InputDecoration(
         hintText: widget.hintText,
-        hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 16),
+        hintStyle: TextStyle(
+          color: AppColors.textLight,
+          fontSize: context.sp(16),
+        ),
 
         suffixIcon: widget.isPassword
             ? IconButton(
+                iconSize: context.sp(24),
                 icon: Icon(
                   _isObscured
                       ? Icons.visibility_off_outlined
@@ -63,25 +68,25 @@ class _KairoInputState extends State<KairoInput> {
 
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 20,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: context.sp(20),
+          vertical: context.sp(20),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(context.sp(16)),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(context.sp(16)),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorText: widget.errorText,
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
+          borderRadius: BorderRadius.circular(context.sp(16)),
+          borderSide: const BorderSide(color: Colors.red),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(context.sp(16)),
           borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
       ),

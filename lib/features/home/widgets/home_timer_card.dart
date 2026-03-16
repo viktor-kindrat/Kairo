@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class HomeTimerCard extends StatelessWidget {
   const HomeTimerCard({super.key});
@@ -8,10 +9,10 @@ class HomeTimerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(context.sp(32)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(context.sp(32)),
         boxShadow: const [
           BoxShadow(
             color: AppColors.cardShadow,
@@ -22,10 +23,9 @@ class HomeTimerCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Лампочка/Сфера з твого макета
           Container(
-            height: 80,
-            width: 80,
+            height: context.sp(80),
+            width: context.sp(80),
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -34,16 +34,19 @@ class HomeTimerCard extends StatelessWidget {
             ),
             child: const Icon(Icons.bolt, color: Colors.white, size: 40),
           ),
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: context.sp(24)),
+          Text(
             'Deep Work',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontSize: context.sp(24),
+              fontWeight: FontWeight.w800,
+            ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: context.sp(8)),
+          Text(
             '01:24:10',
             style: TextStyle(
-              fontSize: 48,
+              fontSize: context.sp(48),
               fontWeight: FontWeight.w300,
               letterSpacing: 1,
             ),

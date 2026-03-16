@@ -9,9 +9,9 @@ class CheckInboxActions extends StatelessWidget {
   final VoidCallback startTimer;
 
   const CheckInboxActions({
-    super.key,
     required this.secondsRemaining,
     required this.startTimer,
+    super.key,
   });
 
   @override

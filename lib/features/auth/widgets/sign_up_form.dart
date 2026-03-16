@@ -4,6 +4,7 @@ import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/core/widgets/text_splitter.dart';
 import 'package:kairo/features/auth/widgets/auth_footer.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class SignUpForm extends StatelessWidget {
   final VoidCallback onSwitchTab;
@@ -15,22 +16,25 @@ class SignUpForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Column(
-          spacing: 16,
+        Column(
+          spacing: context.sp(16),
           children: [
-            KairoInput(hintText: 'Full Name', keyboardType: TextInputType.name),
-            KairoInput(
+            const KairoInput(
+              hintText: 'Full Name',
+              keyboardType: TextInputType.name,
+            ),
+            const KairoInput(
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
             ),
-            KairoInput(hintText: 'Password', isPassword: true),
-            KairoInput(hintText: 'Confirm password', isPassword: true),
+            const KairoInput(hintText: 'Password', isPassword: true),
+            const KairoInput(hintText: 'Confirm password', isPassword: true),
           ],
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: context.sp(24)),
 
         Column(
-          spacing: 32,
+          spacing: context.sp(32),
           children: [
             KairoButton(
               text: 'Sign Up',
@@ -46,15 +50,15 @@ class SignUpForm extends StatelessWidget {
               isOutlined: true,
               icon: SvgPicture.asset(
                 'assets/icons/slack_icon.svg',
-                height: 20,
-                width: 20,
+                height: context.sp(20),
+                width: context.sp(20),
               ),
               onPressed: () {},
             ),
           ],
         ),
 
-        const SizedBox(height: 40),
+        SizedBox(height: context.sp(40)),
 
         AuthFooter(
           message: 'Already have an account? ',

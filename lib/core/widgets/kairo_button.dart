@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class KairoButton extends StatelessWidget {
   final String text;
@@ -23,20 +24,20 @@ class KairoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = isOutlined
         ? OutlinedButton.styleFrom(
-            minimumSize: Size(fullWidth ? double.infinity : 0, 56),
+            minimumSize: Size(fullWidth ? double.infinity : 0, context.sp(56)),
             backgroundColor: Colors.white,
-            side: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+            side: const BorderSide(color: Color(0xFFE5E7EB)),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(context.sp(16)),
             ),
           )
         : ElevatedButton.styleFrom(
             backgroundColor: AppColors.accentBlack,
             foregroundColor: Colors.white,
             elevation: 0,
-            minimumSize: Size(fullWidth ? double.infinity : 0, 56),
+            minimumSize: Size(fullWidth ? double.infinity : 0, context.sp(56)),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(context.sp(16)),
             ),
             // Додаємо колір для стану disabled, щоб кнопка не ставала просто сірою
             disabledBackgroundColor: AppColors.accentBlack.withOpacity(0.7),
@@ -49,24 +50,24 @@ class KairoButton extends StatelessWidget {
       children: [
         if (isLoading) ...[
           SizedBox(
-            height: 20,
-            width: 20,
+            height: context.sp(20),
+            width: context.sp(20),
             child: CircularProgressIndicator(
-              strokeWidth: 2.5,
+              strokeWidth: context.sp(2.5),
               valueColor: AlwaysStoppedAnimation<Color>(
                 isOutlined ? AppColors.primary : Colors.white,
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: context.sp(12)),
         ] else if (icon != null) ...[
           icon!,
-          const SizedBox(width: 12),
+          SizedBox(width: context.sp(12)),
         ],
         Text(
           text,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: context.sp(16),
             fontWeight: FontWeight.w600,
             color: isOutlined ? Colors.black : Colors.white,
             letterSpacing: 0.2,

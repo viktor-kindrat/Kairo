@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/core/widgets/text_splitter.dart';
@@ -20,9 +21,9 @@ class SignInForm extends StatelessWidget {
           hintText: 'Email',
           keyboardType: TextInputType.emailAddress,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: context.sp(16)),
         const KairoInput(hintText: 'Password', isPassword: true),
-        const SizedBox(height: 16),
+        SizedBox(height: context.sp(16)),
 
         Align(
           alignment: Alignment.centerRight,
@@ -30,17 +31,17 @@ class SignInForm extends StatelessWidget {
             onTap: () {
               Navigator.pushNamed(context, '/forgot-password');
             },
-            child: const Text(
+            child: Text(
               'Forgot Password?',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: context.sp(14),
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: context.sp(24)),
 
         KairoButton(
           text: 'Log In',
@@ -48,23 +49,23 @@ class SignInForm extends StatelessWidget {
             Navigator.pushReplacementNamed(context, '/main');
           },
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: context.sp(32)),
 
         const TextSplitter(content: 'or'),
 
-        const SizedBox(height: 32),
+        SizedBox(height: context.sp(32)),
 
         KairoButton(
           text: 'Continue with Slack',
           isOutlined: true,
           icon: SvgPicture.asset(
             'assets/icons/slack_icon.svg',
-            height: 20,
-            width: 20,
+            height: context.sp(20),
+            width: context.sp(20),
           ),
           onPressed: () {},
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: context.sp(40)),
 
         AuthFooter(
           message: 'New to Kairo?',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class AuthFooter extends StatelessWidget {
   final String message;
@@ -7,10 +8,10 @@ class AuthFooter extends StatelessWidget {
   final VoidCallback onTap;
 
   const AuthFooter({
-    super.key,
     required this.message,
     required this.actionText,
     required this.onTap,
+    super.key,
   });
 
   @override
@@ -22,15 +23,18 @@ class AuthFooter extends StatelessWidget {
         children: [
           Text(
             message,
-            style: const TextStyle(color: AppColors.textLight, fontSize: 14),
+            style: TextStyle(
+              color: AppColors.textLight,
+              fontSize: context.sp(14),
+            ),
           ),
           GestureDetector(
             onTap: onTap,
             child: Text(
               actionText,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.primary,
-                fontSize: 14,
+                fontSize: context.sp(14),
                 fontWeight: FontWeight.w600,
                 decoration: TextDecoration.underline,
               ),

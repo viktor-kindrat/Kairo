@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class KairoTabs extends StatefulWidget {
   final List<String> tabs;
@@ -17,7 +18,6 @@ class KairoTabs extends StatefulWidget {
   State<KairoTabs> createState() => _KairoTabsState();
 }
 
-// SingleTickerProviderStateMixin потрібен для роботи анімацій у Flutter (vsync)
 class _KairoTabsState extends State<KairoTabs>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
@@ -25,7 +25,6 @@ class _KairoTabsState extends State<KairoTabs>
   @override
   void initState() {
     super.initState();
-    // Створюємо контролер, який керуватиме анімацією лінії
     _tabController = TabController(
       length: widget.tabs.length,
       initialIndex: widget.selectedIndex,
@@ -33,9 +32,6 @@ class _KairoTabsState extends State<KairoTabs>
     );
   }
 
-  // Цей метод суперважливий!
-  // Він змушує лінію поїхати, якщо ти змінив таб не кліком по ньому,
-  // а наприклад, натиснув лінк "Create an account" внизу екрану.
   @override
   void didUpdateWidget(covariant KairoTabs oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -46,7 +42,7 @@ class _KairoTabsState extends State<KairoTabs>
 
   @override
   void dispose() {
-    _tabController.dispose(); // Обов'язково чистимо пам'ять
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -55,40 +51,34 @@ class _KairoTabsState extends State<KairoTabs>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Використовуємо нативний TabBar від Google
         TabBar(
           controller: _tabController,
-          onTap: widget.onChanged, // Передаємо клік наверх у твій AuthScreen
+          onTap: widget.onChanged,
 
           isScrollable: true,
           tabAlignment: TabAlignment.start,
           padding: EdgeInsets.zero,
-          indicatorPadding: EdgeInsets.zero,
-          labelPadding: const EdgeInsets.only(right: 24.0),
+          labelPadding: EdgeInsets.only(right: context.sp(24)),
 
-          // Кастомізуємо лінію під твій дизайн
           indicatorColor: AppColors.primary,
-          indicatorWeight: 3,
+          indicatorWeight: context.sp(3),
           indicatorSize: TabBarIndicatorSize.label,
 
-          // Кастомізуємо текст
           labelColor: AppColors.textDark,
           unselectedLabelColor: AppColors.textLight,
-          labelStyle: const TextStyle(
-            fontSize: 18,
+          labelStyle: TextStyle(
+            fontSize: context.sp(18),
             fontWeight: FontWeight.w700,
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 18,
+          unselectedLabelStyle: TextStyle(
+            fontSize: context.sp(18),
             fontWeight: FontWeight.w500,
           ),
 
-          // Прибираємо зайві ефекти Material
           dividerColor: Colors.transparent,
           splashFactory: NoSplash.splashFactory,
           overlayColor: WidgetStateProperty.all(Colors.transparent),
 
-          // Генеруємо таби з твого масиву рядків
           tabs: widget.tabs.map((tabText) => Tab(text: tabText)).toList(),
         ),
       ],

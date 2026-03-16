@@ -4,7 +4,7 @@ import 'package:kairo/core/theme/app_colors.dart';
 class KairoStepsList extends StatelessWidget {
   final List<String> steps;
 
-  const KairoStepsList({super.key, required this.steps});
+  const KairoStepsList({required this.steps, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +16,8 @@ class KairoStepsList extends StatelessWidget {
       ),
       child: Column(
         children: steps.asMap().entries.map((entry) {
-          int idx = entry.key;
-          String text = entry.value;
+          final int idx = entry.key;
+          final String text = entry.value;
 
           return Padding(
             padding: EdgeInsets.only(bottom: idx == steps.length - 1 ? 0 : 20),

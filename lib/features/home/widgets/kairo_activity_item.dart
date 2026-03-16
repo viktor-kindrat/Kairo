@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class KairoActivityItem extends StatelessWidget {
   final IconData icon;
@@ -27,12 +28,16 @@ class KairoActivityItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: isActive ? AppColors.primary : AppColors.textLight),
+          Icon(
+            icon,
+            color: isActive ? AppColors.primary : AppColors.textLight,
+            size: context.sp(36),
+          ),
           const SizedBox(height: 8),
           Text(
             label,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: context.sp(14),
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
               color: isActive ? AppColors.primary : AppColors.textLight,
             ),

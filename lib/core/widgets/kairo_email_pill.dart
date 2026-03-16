@@ -4,7 +4,7 @@ import 'package:kairo/core/theme/app_colors.dart';
 class KairoEmailPill extends StatelessWidget {
   final String email;
 
-  const KairoEmailPill({super.key, required this.email});
+  const KairoEmailPill({required this.email, super.key});
 
   @override
   Widget build(BuildContext context) {

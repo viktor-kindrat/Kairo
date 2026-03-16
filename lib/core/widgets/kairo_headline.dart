@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class KairoHeadline extends StatelessWidget {
   final String headline;
@@ -16,14 +17,14 @@ class KairoHeadline extends StatelessWidget {
           child: Text(
             headline,
             textAlign: TextAlign.left,
-            style: const TextStyle(
-              fontSize: 36,
+            style: TextStyle(
+              fontSize: context.sp(36),
               fontWeight: FontWeight.w800,
               color: AppColors.textDark,
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: context.sp(8)),
 
         if (subHeadline != null)
           Align(
@@ -32,7 +33,10 @@ class KairoHeadline extends StatelessWidget {
               subHeadline!,
               textAlign: TextAlign.left,
 
-              style: const TextStyle(fontSize: 16, color: AppColors.textLight),
+              style: TextStyle(
+                fontSize: context.sp(16),
+                color: AppColors.textLight,
+              ),
             ),
           ),
       ],

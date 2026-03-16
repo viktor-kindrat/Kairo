@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class KairoSectionHeader extends StatelessWidget {
   final String title;
@@ -21,8 +22,8 @@ class KairoSectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: context.sp(18),
             fontWeight: FontWeight.w900,
             color: AppColors.textDark,
           ),
@@ -32,8 +33,8 @@ class KairoSectionHeader extends StatelessWidget {
             onTap: onActionTap,
             child: Text(
               actionText!,
-              style: const TextStyle(
-                fontSize: 13,
+              style: TextStyle(
+                fontSize: context.sp(13),
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,
               ),

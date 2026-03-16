@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/features/home/screens/home_screen.dart';
 import 'package:kairo/features/profile/screens/profile_screen.dart';
 
@@ -34,13 +35,13 @@ class _MainScreenState extends State<MainScreen> {
         unselectedItemColor: AppColors.textLight,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(
+        selectedLabelStyle: TextStyle(
           fontWeight: FontWeight.w700,
-          fontSize: 12,
+          fontSize: context.sp(12),
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: TextStyle(
           fontWeight: FontWeight.w500,
-          fontSize: 12,
+          fontSize: context.sp(12),
         ),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),

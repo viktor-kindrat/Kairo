@@ -6,7 +6,7 @@ import 'package:kairo/core/widgets/kairo_headline.dart';
 class CheckInboxHeading extends StatelessWidget {
   final String email;
 
-  const CheckInboxHeading({super.key, required this.email});
+  const CheckInboxHeading({required this.email, super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -6,6 +6,7 @@ import 'package:kairo/core/widgets/kairo_section_header.dart';
 import 'package:kairo/features/home/widgets/focus_progress_item.dart';
 import 'package:kairo/features/home/widgets/home_timer_card.dart';
 import 'package:kairo/features/home/widgets/manual_override_grid.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -20,7 +21,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 32),
               const HomeTimerCard(),
               const SizedBox(height: 32),
@@ -44,20 +45,26 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Hello, Viktor.',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                fontSize: context.sp(24),
+                fontWeight: FontWeight.w900,
+              ),
             ),
             Text(
               'Friday, March 13, 2026',
-              style: TextStyle(color: AppColors.textLight, fontSize: 13),
+              style: TextStyle(
+                color: AppColors.textLight,
+                fontSize: context.sp(13),
+              ),
             ),
           ],
         ),
@@ -77,7 +84,7 @@ class HomeScreen extends StatelessWidget {
               child: const KairoIconButton(
                 size: 48,
                 onPressed: null,
-                icon: const Icon(Icons.settings),
+                icon: Icon(Icons.settings),
               ),
             ),
           ],

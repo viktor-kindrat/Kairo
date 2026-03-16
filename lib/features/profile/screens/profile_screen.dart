@@ -3,6 +3,7 @@ import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/kairo_section_header.dart';
 import 'package:kairo/features/profile/widgets/profile_settings_tile.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -16,8 +17,8 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             children: [
-              _buildAvatar(),
-              const SizedBox(height: 32),
+              _buildAvatar(context),
+              SizedBox(height: context.sp(32)),
               const KairoSectionHeader(title: 'Account'),
               const ProfileSettingsTile(
                 icon: Icons.email_outlined,
@@ -29,24 +30,26 @@ class ProfileScreen extends StatelessWidget {
                 title: 'Password',
                 subtitle: '••••••••••••',
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: context.sp(32)),
               const KairoSectionHeader(title: 'General'),
               ProfileSettingsTile(
                 icon: Icons.dark_mode_outlined,
                 title: 'App Theme',
                 trailing: Switch(value: false, onChanged: (v) {}),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: context.sp(32)),
               KairoButton(
                 text: 'Log Out',
                 onPressed: () =>
                     Navigator.pushReplacementNamed(context, '/auth'),
               ),
+              SizedBox(height: context.sp(16)),
               TextButton(
                 onPressed: () {},
-                child: const Text(
+                child: Text(
                   'Delete Account',
-                  style: TextStyle(color: Colors.red),
+
+                  style: TextStyle(color: Colors.red, fontSize: context.sp(14)),
                 ),
               ),
             ],
@@ -56,31 +59,34 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
-    return const Column(
+  Widget _buildAvatar(BuildContext context) {
+    return Column(
       children: [
         CircleAvatar(
-          radius: 45,
+          radius: context.sp(45),
           backgroundColor: AppColors.primary,
-          child: const Text(
+          child: Text(
             'VK',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: context.sp(24),
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        const Text(
+        SizedBox(height: context.sp(16)),
+        Text(
           'Viktor Kindrat',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          style: TextStyle(
+            fontSize: context.sp(22),
+            fontWeight: FontWeight.w900,
+          ),
         ),
-        const Text(
+        Text(
           'SOFTWARE ENGINEER',
           style: TextStyle(
             color: AppColors.primary,
-            fontSize: 12,
+            fontSize: context.sp(12),
             fontWeight: FontWeight.bold,
           ),
         ),

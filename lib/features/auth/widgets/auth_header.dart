@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class AuthHeader extends StatelessWidget {
   final String backText;
@@ -23,23 +24,27 @@ class AuthHeader extends StatelessWidget {
             onTap: onBackPressed ?? () => Navigator.pop(context),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.arrow_back_ios_new,
-                  size: 16,
+                  size: context.sp(16),
                   color: AppColors.textLight,
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: context.sp(4)),
                 Text(
                   backText,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textLight,
-                    fontSize: 16,
+                    fontSize: context.sp(16),
                   ),
                 ),
               ],
             ),
           ),
-        Image.asset('assets/images/app_icon.png', height: 28, width: 28),
+        Image.asset(
+          'assets/images/app_icon.png',
+          height: context.sp(28),
+          width: context.sp(28),
+        ),
       ],
     );
   }

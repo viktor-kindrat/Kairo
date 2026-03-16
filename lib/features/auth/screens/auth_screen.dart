@@ -5,6 +5,7 @@ import 'package:kairo/core/widgets/kairo_tabs.dart';
 import 'package:kairo/features/auth/widgets/auth_header.dart';
 import 'package:kairo/features/auth/widgets/sign_in_form.dart';
 import 'package:kairo/features/auth/widgets/sign_up_form.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class AuthScreen extends StatefulWidget {
   final bool showSignUpInitially;
@@ -38,12 +39,15 @@ class _AuthScreenState extends State<AuthScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: context.sp(24),
+            vertical: context.sp(16),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const AuthHeader(backButtonRemoved: true),
-              const SizedBox(height: 40),
+              SizedBox(height: context.sp(40)),
 
               KairoHeadline(
                 headline: isLogin ? 'Start Focusing.' : 'Join Kairo.',
@@ -51,7 +55,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ? 'Welcome back to your workspace.'
                     : 'Create your account below',
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: context.sp(32)),
 
               KairoTabs(
                 tabs: const ['Log In', 'Sign Up'],
@@ -60,7 +64,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
 
               const Divider(color: AppColors.border, height: 1, thickness: 1),
-              const SizedBox(height: 32),
+              SizedBox(height: context.sp(32)),
 
               if (isLogin)
                 SignInForm(onSwitchTab: () => _switchTab(false))

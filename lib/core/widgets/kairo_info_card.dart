@@ -9,8 +9,8 @@ class KairoInfoCard extends StatelessWidget {
   final Color iconColor;
 
   const KairoInfoCard({
-    super.key,
     required this.text,
+    super.key,
     this.boldText,
     this.icon = Icons.info_outline,
     this.backgroundColor = const Color(0xFFF8F8FD),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kairo/core/utils/responsive_utils.dart';
 
 class FocusProgressItem extends StatelessWidget {
   final String label;
@@ -25,26 +26,26 @@ class FocusProgressItem extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  fontSize: context.sp(13),
                 ),
               ),
               Text(
                 time,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 13,
+                  fontSize: context.sp(13),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: context.sp(8)),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(context.sp(4)),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 6,
+              minHeight: context.sp(6),
               backgroundColor: color.withOpacity(0.1),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
