@@ -1,0 +1,50 @@
+<svg width="793" height="793" viewBox="0 0 793 793" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g filter="url(#filter0_f_3_80)">
+        <path
+            d="M257.714 636.872C215.521 612.512 180.484 577.474 156.124 535.281C131.764 493.088 118.939 445.227 118.939 396.506L257.762 396.478C257.762 420.839 264.175 444.769 276.355 465.866C288.535 486.962 306.054 504.481 327.15 516.661L257.714 636.872Z"
+            fill="url(#paint0_linear_3_80)" />
+        <path
+            d="M257.725 156.135C299.919 131.772 347.782 118.945 396.505 118.944C445.227 118.943 493.091 131.767 535.286 156.128L465.85 276.339C444.76 264.163 420.837 257.75 396.484 257.747C372.131 257.743 348.206 264.148 327.112 276.317L257.725 156.135Z"
+            fill="url(#paint1_linear_3_80)" />
+        <path
+            d="M674.061 396.494C674.061 445.216 661.235 493.08 636.873 535.274C612.511 577.468 577.471 612.506 535.275 636.865L465.887 516.683C486.974 504.5 504.483 486.982 516.656 465.89C528.829 444.798 535.238 420.874 535.238 396.522L674.061 396.494Z"
+            fill="url(#paint2_linear_3_80)" />
+    </g>
+    <path
+        d="M396.5 470.844C437.559 470.844 470.844 437.559 470.844 396.5C470.844 355.441 437.559 322.156 396.5 322.156C355.441 322.156 322.156 355.441 322.156 396.5C322.156 437.559 355.441 470.844 396.5 470.844Z"
+        fill="url(#paint3_radial_3_80)" />
+    <path opacity="0.75"
+        d="M381.631 401.456C395.318 401.456 406.413 390.361 406.413 376.675C406.413 362.989 395.318 351.894 381.631 351.894C367.945 351.894 356.85 362.989 356.85 376.675C356.85 390.361 367.945 401.456 381.631 401.456Z"
+        fill="white" />
+    <defs>
+        <filter id="filter0_f_3_80" x="114.139" y="114.144" width="564.722" height="527.528"
+            filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix" />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="2.4" result="effect1_foregroundBlur_3_80" />
+        </filter>
+        <linearGradient id="paint0_linear_3_80" x1="870.426" y1="523.488" x2="-77.4253" y2="269.512"
+            gradientUnits="userSpaceOnUse">
+            <stop stop-color="#9333EA" />
+            <stop offset="0.55" stop-color="#6D28D9" />
+            <stop offset="1" stop-color="#0C0A1E" />
+        </linearGradient>
+        <linearGradient id="paint1_linear_3_80" x1="870.425" y1="523.488" x2="-77.4254" y2="269.512"
+            gradientUnits="userSpaceOnUse">
+            <stop stop-color="#9333EA" />
+            <stop offset="0.55" stop-color="#6D28D9" />
+            <stop offset="1" stop-color="#0C0A1E" />
+        </linearGradient>
+        <linearGradient id="paint2_linear_3_80" x1="870.425" y1="523.488" x2="-77.4255" y2="269.512"
+            gradientUnits="userSpaceOnUse">
+            <stop stop-color="#9333EA" />
+            <stop offset="0.55" stop-color="#6D28D9" />
+            <stop offset="1" stop-color="#0C0A1E" />
+        </linearGradient>
+        <radialGradient id="paint3_radial_3_80" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+            gradientTransform="translate(376.675 337.025) scale(277.55)">
+            <stop stop-color="#A78BFA" />
+            <stop offset="1" stop-color="#1E0A3C" />
+        </radialGradient>
+    </defs>
+</svg>
