@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "498359023979",
+    "project_id": "kairo-status-hub",
+    "storage_bucket": "kairo-status-hub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498359023979:android:dd000d8ccad0638ae3342e",
+        "android_client_info": {
+          "package_name": "com.example.kairo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498359023979-e868t48a68q3d55ljfm6l49ssgkoaa64.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBe5kaIw_w1_q-W8zprDn80wz-raTFCS2M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "498359023979-e868t48a68q3d55ljfm6l49ssgkoaa64.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "498359023979-2g092hiu9fq5rf6tt764m6ihkbse3rkc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kairo"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498359023979:android:2bb3ab53d3a60b58e3342e",
+        "android_client_info": {
+          "package_name": "com.trainofthought.kairo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498359023979-h6o5ae1cm1i5sfigi9t2bu71g4puu422.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trainofthought.kairo",
+            "certificate_hash": "870b6a742287381e8a61300c5c33cf5e60df36c8"
+          }
+        },
+        {
+          "client_id": "498359023979-e868t48a68q3d55ljfm6l49ssgkoaa64.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBe5kaIw_w1_q-W8zprDn80wz-raTFCS2M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "498359023979-e868t48a68q3d55ljfm6l49ssgkoaa64.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "498359023979-2g092hiu9fq5rf6tt764m6ihkbse3rkc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kairo"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

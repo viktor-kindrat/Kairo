@@ -5,6 +5,7 @@ import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/email_password_fields.dart';
 import 'package:kairo/features/auth/widgets/auth_action_section.dart';
 
@@ -49,16 +50,15 @@ class _SignInFormState extends State<SignInForm> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-
+    } on AuthException catch (error) {
       if (!mounted) {
         return;
       }
 
-      Navigator.pushReplacementNamed(context, AppRoutes.main);
-    } on AuthException catch (error) {
       setState(() {
-        _formError = error.message;
+        _formError = null;
       });
+      context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
         setState(() {

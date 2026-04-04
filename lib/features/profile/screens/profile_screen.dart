@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kairo/core/app_routes.dart';
 import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/contexts/status_context.dart';
 import 'package:kairo/core/models/local_user.dart';
@@ -86,16 +85,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logOut() async {
     await context.auth.signOut();
-
-    if (!mounted) {
-      return;
-    }
-
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.auth,
-      (route) => false,
-    );
   }
 
   Future<void> _deleteAccount() async {
@@ -107,16 +96,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await statusController.clear();
     await statusController.loadOrSeedDefaults();
     await ProfileAvatarStorage.deleteAvatar(avatarPath);
-
-    if (!mounted) {
-      return;
-    }
-
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.auth,
-      (route) => false,
-    );
   }
 
   Future<void> _showAvatarActions(LocalUser user) async {

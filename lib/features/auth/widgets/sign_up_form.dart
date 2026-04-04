@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/app_routes.dart';
 import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/app_email_input.dart';
 import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/core/widgets/password_pair_fields.dart';
@@ -68,16 +68,15 @@ class _SignUpFormState extends State<SignUpForm> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-
+    } on AuthException catch (error) {
       if (!mounted) {
         return;
       }
 
-      Navigator.pushReplacementNamed(context, AppRoutes.verifyEmail);
-    } on AuthException catch (error) {
       setState(() {
-        _formError = error.message;
+        _formError = null;
       });
+      context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
         setState(() {

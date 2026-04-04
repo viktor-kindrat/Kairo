@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/app_routes.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_headline.dart';
@@ -20,44 +18,11 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   late bool isLogin;
-  bool _didRedirect = false;
 
   @override
   void initState() {
     super.initState();
     isLogin = !widget.showSignUpInitially;
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (_didRedirect) {
-      return;
-    }
-
-    if (context.auth.isAuthenticated) {
-      _didRedirect = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-
-        Navigator.pushReplacementNamed(context, AppRoutes.main);
-      });
-      return;
-    }
-
-    if (context.auth.hasPendingVerification) {
-      _didRedirect = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-
-        Navigator.pushReplacementNamed(context, AppRoutes.verifyEmail);
-      });
-    }
   }
 
   void _switchTab(bool toLogin) {
