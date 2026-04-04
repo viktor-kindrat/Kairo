@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/app_routes.dart';
 import 'package:kairo/core/utils/open_mail_client.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
-import 'package:kairo/features/auth/widgets/auth_footer.dart';
+import 'package:kairo/features/auth/widgets/resend_countdown_footer.dart';
 
 class CheckInboxActions extends StatelessWidget {
+  final VoidCallback onResend;
   final int secondsRemaining;
-  final VoidCallback startTimer;
 
   const CheckInboxActions({
+    required this.onResend,
     required this.secondsRemaining,
-    required this.startTimer,
     super.key,
   });
 
@@ -25,29 +25,17 @@ class CheckInboxActions extends StatelessWidget {
           onPressed: () => MailUtils.openMailApp(context),
         ),
 
-        _buildFooter(),
+        ResendCountdownFooter(
+          secondsRemaining: secondsRemaining,
+          onTap: onResend,
+        ),
 
         KairoButton(
           text: 'Back to Log In',
           isOutlined: true,
-          onPressed: () => Navigator.pushNamed(context, '/auth'),
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.auth),
         ),
       ],
     );
-  }
-
-  Widget _buildFooter() {
-    if (secondsRemaining > 0) {
-      return Text(
-        "Didn't receive it? Resend in ${secondsRemaining}s",
-        style: const TextStyle(color: AppColors.textLight, fontSize: 14),
-      );
-    } else {
-      return AuthFooter(
-        message: "Didn't receive it? ",
-        actionText: 'Resend',
-        onTap: startTimer,
-      );
-    }
   }
 }

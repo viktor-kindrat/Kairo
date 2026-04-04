@@ -1,12 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:kairo/core/app_routes.dart';
 import 'package:kairo/core/constants.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/resend_countdown_controller.dart';
 import 'package:kairo/core/widgets/kairo_steps_list.dart';
 import 'package:kairo/features/auth/widgets/auth_header.dart';
 import 'package:kairo/features/auth/widgets/check_inbox_actions.dart';
-import 'package:kairo/features/auth/widgets/check_inbox_heading.dart';
+import 'package:kairo/features/auth/widgets/email_delivery_hero.dart';
 
 class CheckInboxScreen extends StatefulWidget {
   final String email;
@@ -18,30 +18,19 @@ class CheckInboxScreen extends StatefulWidget {
 }
 
 class _CheckInboxScreenState extends State<CheckInboxScreen> {
-  int _secondsRemaining = resendPasswordTimer;
-  Timer? _timer;
+  late final ResendCountdownController _countdownController;
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
-  }
-
-  void _startTimer() {
-    setState(() => _secondsRemaining = resendPasswordTimer);
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsRemaining > 0) {
-        setState(() => _secondsRemaining--);
-      } else {
-        timer.cancel();
-      }
-    });
+    _countdownController = ResendCountdownController(
+      initialSeconds: resendPasswordTimer,
+    )..start();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _countdownController.dispose();
     super.dispose();
   }
 
@@ -56,13 +45,18 @@ class _CheckInboxScreenState extends State<CheckInboxScreen> {
             children: [
               AuthHeader(
                 backText: 'Log In',
-                onBackPressed: () => Navigator.pushNamed(context, '/auth'),
+                onBackPressed: () =>
+                    Navigator.pushNamed(context, AppRoutes.auth),
               ),
               const SizedBox(height: 40),
               Column(
                 spacing: 32,
                 children: [
-                  CheckInboxHeading(email: widget.email),
+                  EmailDeliveryHero(
+                    email: widget.email,
+                    headline: 'Check your inbox.',
+                    subHeadline: 'We\'ve sent a reset link to',
+                  ),
 
                   const KairoStepsList(
                     steps: [
@@ -72,9 +66,14 @@ class _CheckInboxScreenState extends State<CheckInboxScreen> {
                     ],
                   ),
 
-                  CheckInboxActions(
-                    secondsRemaining: _secondsRemaining,
-                    startTimer: _startTimer,
+                  ValueListenableBuilder<int>(
+                    valueListenable: _countdownController,
+                    builder: (context, secondsRemaining, child) {
+                      return CheckInboxActions(
+                        secondsRemaining: secondsRemaining,
+                        onResend: _countdownController.start,
+                      );
+                    },
                   ),
                 ],
               ),
