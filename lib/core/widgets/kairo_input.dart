@@ -8,8 +8,6 @@ class KairoInput extends StatefulWidget {
   final bool isPassword;
   final TextInputType keyboardType;
   final String? errorText;
-  final ValueChanged<String>? onChanged;
-  final bool readOnly;
 
   const KairoInput({
     required this.hintText,
@@ -18,8 +16,6 @@ class KairoInput extends StatefulWidget {
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
     this.errorText,
-    this.onChanged,
-    this.readOnly = false,
   });
 
   @override
@@ -41,8 +37,6 @@ class _KairoInputState extends State<KairoInput> {
       controller: widget.controller,
       obscureText: _isObscured,
       keyboardType: widget.keyboardType,
-      onChanged: widget.onChanged,
-      readOnly: widget.readOnly,
       style: TextStyle(
         color: AppColors.textDark,
         fontSize: context.sp(16),

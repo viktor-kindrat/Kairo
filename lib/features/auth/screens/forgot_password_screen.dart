@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:kairo/core/app_routes.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
-import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/theme/app_colors.dart';
-import 'package:kairo/core/utils/auth_validators.dart';
-import 'package:kairo/core/widgets/app_email_input.dart';
+import 'package:kairo/core/utils/email_validation.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/kairo_headline.dart';
 import 'package:kairo/core/widgets/kairo_info_card.dart';
+import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/features/auth/screens/check_inbox_screen.dart';
+import 'package:kairo/features/auth/services/auth_service.dart';
 import 'package:kairo/features/auth/widgets/auth_footer.dart';
 import 'package:kairo/features/auth/widgets/auth_header.dart';
 
@@ -28,7 +26,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void _sendResetLink() async {
     final email = _emailController.text.trim();
 
-    if (validateEmail(email) != null) {
+    if (email.isEmpty || !isEmailValid(email)) {
       setState(() => _errorText = 'Please enter a valid email address.');
       return;
     }
@@ -38,30 +36,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _isLoading = true;
     });
 
-    try {
-      await context.auth.resetPassword(email);
+    final success = await AuthService.sendPasswordResetEmail(email);
 
-      if (!mounted) {
-        return;
-      }
+    if (!mounted) return;
 
-      setState(() => _isLoading = false);
+    setState(() => _isLoading = false);
 
+    if (success) {
       Navigator.push(
         context,
         MaterialPageRoute<void>(
           builder: (context) => CheckInboxScreen(email: email),
         ),
       );
-    } on AuthException catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isLoading = false;
-        _errorText = error.message;
-      });
+    } else {
+      setState(() => _errorText = 'Something went wrong. Try again later.');
     }
   }
 
@@ -81,8 +70,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             children: [
               AuthHeader(
-                onBackPressed: () =>
-                    Navigator.pushNamed(context, AppRoutes.auth),
+                onBackPressed: () => Navigator.pushNamed(context, '/auth'),
               ),
               const SizedBox(height: 40),
 
@@ -98,19 +86,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               const SizedBox(height: 32),
 
-              AppEmailInput(
+              KairoInput(
                 controller: _emailController,
                 hintText: 'Email Address',
+                keyboardType: TextInputType.emailAddress,
                 errorText: _errorText,
-                onChanged: (_) {
-                  if (_errorText == null) {
-                    return;
-                  }
-
-                  setState(() {
-                    _errorText = null;
-                  });
-                },
               ),
               const SizedBox(height: 24),
 

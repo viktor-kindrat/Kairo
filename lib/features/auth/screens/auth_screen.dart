@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/app_routes.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_headline.dart';
@@ -20,7 +18,6 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   late bool isLogin;
-  bool _didRedirect = false;
 
   @override
   void initState() {
@@ -28,46 +25,12 @@ class _AuthScreenState extends State<AuthScreen> {
     isLogin = !widget.showSignUpInitially;
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (_didRedirect) {
-      return;
-    }
-
-    if (context.auth.isAuthenticated) {
-      _didRedirect = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-
-        Navigator.pushReplacementNamed(context, AppRoutes.main);
-      });
-      return;
-    }
-
-    if (context.auth.hasPendingVerification) {
-      _didRedirect = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-
-        Navigator.pushReplacementNamed(context, AppRoutes.verifyEmail);
-      });
-    }
-  }
-
   void _switchTab(bool toLogin) {
-    if (isLogin == toLogin) {
-      return;
+    if (isLogin != toLogin) {
+      setState(() {
+        isLogin = toLogin;
+      });
     }
-
-    setState(() {
-      isLogin = toLogin;
-    });
   }
 
   @override
@@ -85,6 +48,7 @@ class _AuthScreenState extends State<AuthScreen> {
             children: [
               const AuthHeader(backButtonRemoved: true),
               SizedBox(height: context.sp(40)),
+
               KairoHeadline(
                 headline: isLogin ? 'Start Focusing.' : 'Join Kairo.',
                 subHeadline: isLogin
@@ -92,13 +56,16 @@ class _AuthScreenState extends State<AuthScreen> {
                     : 'Create your account below',
               ),
               SizedBox(height: context.sp(32)),
+
               KairoTabs(
                 tabs: const ['Log In', 'Sign Up'],
                 selectedIndex: isLogin ? 0 : 1,
                 onChanged: (index) => _switchTab(index == 0),
               ),
+
               const Divider(color: AppColors.border, height: 1, thickness: 1),
               SizedBox(height: context.sp(32)),
+
               if (isLogin)
                 SignInForm(onSwitchTab: () => _switchTab(false))
               else

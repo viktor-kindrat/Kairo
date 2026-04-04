@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:open_mail/open_mail.dart';
 
 class MailUtils {
@@ -47,7 +46,12 @@ class MailUtils {
         ),
       );
     } else if (!result.didOpen && !result.canOpen) {
-      context.showErrorSnackBar('No email apps found on this device.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No email apps found on this device.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }
