@@ -2,17 +2,23 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:kairo/features/mqtt/models/cube_telemetry_entry.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MqttService {
   static const String defaultTopic = 'kairo/cube/orientation';
+  static const int historyLimit = 50;
 
   static final MqttService instance = MqttService._();
 
   final ValueNotifier<String> latestMessage = ValueNotifier<String>(
     'No MQTT data received yet.',
   );
+  final ValueNotifier<CubeTelemetryEntry?> latestTelemetry =
+      ValueNotifier<CubeTelemetryEntry?>(null);
+  final ValueNotifier<List<CubeTelemetryEntry>> telemetryHistory =
+      ValueNotifier<List<CubeTelemetryEntry>>(const []);
   final ValueNotifier<MqttConnectionState> connectionState =
       ValueNotifier<MqttConnectionState>(MqttConnectionState.disconnected);
 
@@ -124,8 +130,14 @@ class MqttService {
       final rawMessage = MqttPublishPayload.bytesToStringAsString(
         payload.payload.message,
       );
+      final telemetryEntry = CubeTelemetryEntry.fromPayload(rawMessage);
 
       latestMessage.value = rawMessage;
+      latestTelemetry.value = telemetryEntry;
+      telemetryHistory.value = [
+        telemetryEntry,
+        ...telemetryHistory.value,
+      ].take(historyLimit).toList(growable: false);
     });
   }
 }

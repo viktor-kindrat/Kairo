@@ -12,8 +12,14 @@ class StatusIconOption {
   });
 }
 
+const String defaultStatusIconKey = 'bolt';
+
 const List<StatusIconOption> statusIconOptions = [
-  StatusIconOption(key: 'bolt', label: 'Deep Work', icon: Icons.bolt),
+  StatusIconOption(
+    key: defaultStatusIconKey,
+    label: 'Deep Work',
+    icon: Icons.bolt,
+  ),
   StatusIconOption(
     key: 'groups_outlined',
     label: 'Meeting',
@@ -57,4 +63,12 @@ IconData iconForStatusKey(String iconKey) {
       .firstOrNull;
 
   return matchingOption?.icon ?? Icons.circle_outlined;
+}
+
+String labelForStatusKey(String iconKey, {String fallback = 'Not provided'}) {
+  final matchingOption = statusIconOptions
+      .where((option) => option.key == iconKey)
+      .firstOrNull;
+
+  return matchingOption?.label ?? fallback;
 }

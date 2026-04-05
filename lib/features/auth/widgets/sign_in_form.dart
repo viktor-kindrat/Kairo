@@ -26,6 +26,7 @@ class _SignInFormState extends State<SignInForm> {
   String? _passwordError;
   String? _formError;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   Future<void> _submit() async {
     final emailError = validateEmail(_emailController.text);
@@ -63,6 +64,33 @@ class _SignInFormState extends State<SignInForm> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _submitGoogleSignIn() async {
+    if (_isLoading || _isGoogleLoading) {
+      return;
+    }
+
+    setState(() {
+      _formError = null;
+      _isGoogleLoading = true;
+    });
+
+    try {
+      await context.auth.signInWithGoogle();
+    } on AuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      context.showErrorSnackBar(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
         });
       }
     }
@@ -122,6 +150,10 @@ class _SignInFormState extends State<SignInForm> {
           primaryButtonText: _isLoading ? 'Logging In...' : 'Log In',
           isPrimaryLoading: _isLoading,
           onPrimaryPressed: _submit,
+          onSecondaryPressed: _submitGoogleSignIn,
+          secondaryButtonText: _isGoogleLoading
+              ? 'Connecting Google...'
+              : 'Continue with Google',
           formError: _formError,
           footerMessage: 'New to Kairo?',
           footerActionText: 'Sign Up',

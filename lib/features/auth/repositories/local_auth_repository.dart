@@ -91,6 +91,13 @@ class LocalAuthRepository implements IAuthRepository {
   }
 
   @override
+  Future<LocalUser?> signInWithGoogle() async {
+    throw const AuthException(
+      'Google sign-in is not available in local auth mode.',
+    );
+  }
+
+  @override
   Future<void> signOut() async {
     await _userStore.clearSessionEmail();
   }

@@ -10,12 +10,13 @@ import 'package:kairo/core/widgets/kairo_email_pill.dart';
 import 'package:kairo/core/widgets/kairo_icon_button.dart';
 import 'package:kairo/core/widgets/kairo_pill.dart';
 import 'package:kairo/core/widgets/kairo_section_header.dart';
+import 'package:kairo/features/home/utils/status_preset_icons.dart';
 import 'package:kairo/features/home/widgets/focus_progress_item.dart';
 import 'package:kairo/features/home/widgets/home_timer_card.dart';
 import 'package:kairo/features/home/widgets/manual_override_grid.dart';
 import 'package:kairo/features/home/widgets/status_preset_sheet.dart';
+import 'package:kairo/features/mqtt/models/cube_telemetry_entry.dart';
 import 'package:kairo/features/mqtt/services/mqtt_service.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,36 +28,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final MqttService _mqttService = MqttService.instance;
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeMqtt();
-  }
-
-  Future<void> _initializeMqtt() async {
-    try {
-      await _mqttService.connect();
-      _mqttService.subscribe(MqttService.defaultTopic);
-    } catch (error) {
-      debugPrint('MQTT init error: $error');
-
-      if (!mounted) {
-        return;
-      }
-
-      context.showErrorSnackBar('Could not connect to MQTT broker.');
-    }
-  }
-
-  @override
-  void dispose() {
-    _mqttService.disconnect();
-    super.dispose();
-  }
-
   Future<void> _showPresetSheet({StatusPreset? preset}) async {
     final defaultIconKey = context.statuses.presets.isEmpty
-        ? 'bolt'
+        ? defaultStatusIconKey
         : context.statuses.presets.first.iconKey;
 
     await showModalBottomSheet<void>(
@@ -144,10 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 32),
               const HomeTimerCard(),
               const SizedBox(height: 32),
-              const KairoSectionHeader(title: 'Cube Telemetry'),
-              const SizedBox(height: 20),
-              _buildMqttCard(context),
-              const SizedBox(height: 32),
               const KairoSectionHeader(
                 title: 'Today\'s Focus',
                 actionText: '6h 52m total',
@@ -161,14 +131,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 onActionTap: _showPresetSheet,
               ),
               const SizedBox(height: 20),
-              if (presets.isEmpty)
-                _buildEmptyState(context)
-              else
-                ManualOverrideGrid(
-                  presets: presets,
-                  onPresetTap: _setActive,
-                  onPresetEdit: (preset) => _showPresetSheet(preset: preset),
-                ),
+              ValueListenableBuilder<CubeTelemetryEntry?>(
+                valueListenable: _mqttService.latestTelemetry,
+                builder: (context, telemetry, child) {
+                  if (presets.isEmpty) {
+                    return _buildEmptyState(context);
+                  }
+
+                  return ManualOverrideGrid(
+                    presets: presets,
+                    activeOrientationLabel: telemetry?.orientationLabel,
+                    onPresetTap: _setActive,
+                    onPresetEdit: (preset) => _showPresetSheet(preset: preset),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -221,26 +198,35 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Transform.scale(
-              scale: 0.9,
-              child: const KairoPill(
-                icon: Icons.battery_2_bar_rounded,
-                text: 'Cube - 85%',
-              ),
-            ),
-            const SizedBox(width: 8),
-            Transform.scale(
-              scale: 0.9,
-              child: const KairoIconButton(
-                size: 48,
-                onPressed: null,
-                icon: Icon(Icons.settings),
-              ),
-            ),
-          ],
+        ValueListenableBuilder<CubeTelemetryEntry?>(
+          valueListenable: _mqttService.latestTelemetry,
+          builder: (context, telemetry, child) {
+            final batteryLabel = telemetry?.batteryPercent == null
+                ? 'Cube - --%'
+                : 'Cube - ${telemetry!.batteryPercent}%';
+
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Transform.scale(
+                  scale: 0.9,
+                  child: KairoPill(
+                    icon: Icons.battery_2_bar_rounded,
+                    text: batteryLabel,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Transform.scale(
+                  scale: 0.9,
+                  child: const KairoIconButton(
+                    size: 48,
+                    onPressed: null,
+                    icon: Icon(Icons.settings),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -277,102 +263,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-
-  Widget _buildMqttCard(BuildContext context) {
-    return ValueListenableBuilder<MqttConnectionState>(
-      valueListenable: _mqttService.connectionState,
-      builder: (context, connectionState, child) {
-        return ValueListenableBuilder<String>(
-          valueListenable: _mqttService.latestMessage,
-          builder: (context, latestMessage, child) {
-            final isConnected =
-                connectionState == MqttConnectionState.connected;
-
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: const [
-                  BoxShadow(color: Color(0x05000000), blurRadius: 20),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: isConnected ? Colors.green : Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        _connectionLabel(connectionState),
-                        style: TextStyle(
-                          fontSize: context.sp(15),
-                          fontWeight: FontWeight.w700,
-                          color: isConnected
-                              ? Colors.green.shade700
-                              : Colors.red.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Topic: ${MqttService.defaultTopic}',
-                    style: TextStyle(
-                      color: AppColors.textLight,
-                      fontSize: context.sp(13),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF7F7FF),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Text(
-                      latestMessage,
-                      style: TextStyle(
-                        fontSize: context.sp(14),
-                        height: 1.45,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  String _connectionLabel(MqttConnectionState state) {
-    switch (state) {
-      case MqttConnectionState.connecting:
-        return 'Connecting';
-      case MqttConnectionState.connected:
-        return 'Connected';
-      case MqttConnectionState.disconnected:
-        return 'Disconnected';
-      case MqttConnectionState.disconnecting:
-        return 'Disconnecting';
-      case MqttConnectionState.faulted:
-        return 'Fault';
-    }
   }
 
   String _firstName(String fullName) {

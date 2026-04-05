@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/contexts/status_context.dart';
 import 'package:kairo/core/models/local_user.dart';
+import 'package:kairo/core/models/profile_update_result.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
@@ -28,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _openAccountSettings(LocalUser user) async {
     final authController = context.auth;
-    final didSave = await showModalBottomSheet<bool>(
+    final updateResult = await showModalBottomSheet<ProfileUpdateResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -37,7 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           user: user,
           onSave:
               ({required fullName, required email, required roleTitle}) async {
-                await authController.updateProfile(
+                return authController.updateProfile(
                   fullName: fullName,
                   email: email,
                   roleTitle: roleTitle,
@@ -48,7 +49,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
 
-    if (didSave != true || !mounted) {
+    if (updateResult == null || !mounted) {
+      return;
+    }
+
+    if (updateResult.requiresEmailReconfirmation) {
+      context.showSuccessSnackBar(
+        'Confirm your new email address, then sign in again to continue.',
+      );
       return;
     }
 

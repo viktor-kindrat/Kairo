@@ -31,6 +31,7 @@ class _SignUpFormState extends State<SignUpForm> {
   String? _confirmPasswordError;
   String? _formError;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   Future<void> _submit() async {
     final fullNameError = validateFullName(_fullNameController.text);
@@ -81,6 +82,33 @@ class _SignUpFormState extends State<SignUpForm> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _submitGoogleSignIn() async {
+    if (_isLoading || _isGoogleLoading) {
+      return;
+    }
+
+    setState(() {
+      _formError = null;
+      _isGoogleLoading = true;
+    });
+
+    try {
+      await context.auth.signInWithGoogle();
+    } on AuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      context.showErrorSnackBar(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
         });
       }
     }
@@ -149,6 +177,10 @@ class _SignUpFormState extends State<SignUpForm> {
           primaryButtonText: _isLoading ? 'Signing Up...' : 'Sign Up',
           isPrimaryLoading: _isLoading,
           onPrimaryPressed: _submit,
+          onSecondaryPressed: _submitGoogleSignIn,
+          secondaryButtonText: _isGoogleLoading
+              ? 'Connecting Google...'
+              : 'Continue with Google',
           formError: _formError,
           footerMessage: 'Already have an account? ',
           footerActionText: 'Log In',

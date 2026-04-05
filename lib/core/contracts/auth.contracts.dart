@@ -3,6 +3,8 @@ import 'package:kairo/core/models/local_user.dart';
 abstract class IAuthRepository {
   Future<LocalUser> signIn({required String email, required String password});
 
+  Future<LocalUser?> signInWithGoogle();
+
   Future<LocalUser> signUp(LocalUser user);
 
   Future<void> sendEmailVerification();

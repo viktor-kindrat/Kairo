@@ -4,6 +4,7 @@ import 'package:kairo/core/contracts/auth.contracts.dart';
 import 'package:kairo/core/contracts/profile.contracts.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/models/local_user.dart';
+import 'package:kairo/core/models/profile_update_result.dart';
 
 class AuthController extends ChangeNotifier {
   final IAuthRepository _authRepository;
@@ -37,6 +38,18 @@ class AuthController extends ChangeNotifier {
     required String password,
   }) async {
     final user = await _authRepository.signIn(email: email, password: password);
+    _currentUser = user;
+    notifyListeners();
+    return user;
+  }
+
+  Future<LocalUser?> signInWithGoogle() async {
+    final user = await _authRepository.signInWithGoogle();
+
+    if (user == null) {
+      return null;
+    }
+
     _currentUser = user;
     notifyListeners();
     return user;
@@ -112,7 +125,7 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  Future<LocalUser> updateProfile({
+  Future<ProfileUpdateResult> updateProfile({
     required String fullName,
     required String email,
     required String roleTitle,
@@ -122,16 +135,21 @@ class AuthController extends ChangeNotifier {
       throw const AuthException('Please log in to update your profile.');
     }
 
-    final updatedUser = await _profileRepository.updateProfile(
+    final updateResult = await _profileRepository.updateProfile(
       fullName: fullName,
       email: email,
       roleTitle: roleTitle,
       password: password,
     );
 
-    _currentUser = updatedUser;
+    if (updateResult.requiresEmailReconfirmation) {
+      clearCurrentUser();
+      return updateResult;
+    }
+
+    _currentUser = updateResult.user;
     notifyListeners();
-    return updatedUser;
+    return updateResult;
   }
 
   Future<LocalUser> updateAvatar(String? avatarPath) async {

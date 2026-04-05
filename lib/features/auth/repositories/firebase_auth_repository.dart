@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kairo/core/constants.dart';
 import 'package:kairo/core/contracts/auth.contracts.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
@@ -10,14 +11,18 @@ import 'package:kairo/core/utils/local_user_store.dart';
 class FirebaseAuthRepository implements IAuthRepository {
   final FirebaseAuth _firebaseAuth;
   final Connectivity _connectivity;
+  final GoogleSignIn _googleSignIn;
   final LocalUserStore _userStore;
+  Future<void>? _googleSignInInitialization;
 
   FirebaseAuthRepository({
     required LocalUserStore userStore,
     FirebaseAuth? firebaseAuth,
     Connectivity? connectivity,
+    GoogleSignIn? googleSignIn,
   }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
        _connectivity = connectivity ?? Connectivity(),
+       _googleSignIn = googleSignIn ?? GoogleSignIn.instance,
        _userStore = userStore;
 
   @override
@@ -78,6 +83,54 @@ class FirebaseAuthRepository implements IAuthRepository {
     final localUser = _mapFirebaseUser(firebaseUser);
     await _userStore.writeUserAndSession(localUser);
     return localUser;
+  }
+
+  @override
+  Future<LocalUser?> signInWithGoogle() async {
+    await _ensureConnection();
+    await _initializeGoogleSignIn();
+
+    try {
+      final googleUser = await _googleSignIn.authenticate();
+      final googleAuth = googleUser.authentication;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw const AuthException(
+          'Google sign-in did not return a valid identity token.',
+        );
+      }
+
+      final credential = GoogleAuthProvider.credential(idToken: idToken);
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) {
+        throw const AuthException(
+          'We could not complete Google sign in. Please try again.',
+        );
+      }
+
+      return _persistAuthenticatedUser(firebaseUser);
+    } on GoogleSignInException catch (error) {
+      switch (error.code) {
+        case GoogleSignInExceptionCode.canceled:
+        case GoogleSignInExceptionCode.interrupted:
+          return null;
+        case GoogleSignInExceptionCode.uiUnavailable:
+          throw const AuthException(
+            'Google sign-in is unavailable on this device right now.',
+          );
+        default:
+          throw AuthException(
+            error.description ?? 'Google sign-in failed. Please try again.',
+          );
+      }
+    } on FirebaseAuthException catch (error) {
+      throw _mapFirebaseAuthException(error);
+    }
   }
 
   @override
@@ -152,6 +205,9 @@ class FirebaseAuthRepository implements IAuthRepository {
 
     try {
       await _firebaseAuth.signOut();
+      if (_googleSignInInitialization != null) {
+        await _googleSignIn.signOut();
+      }
       await _userStore.clearSessionEmail();
       await _userStore.clearUser();
     } on FirebaseAuthException catch (error) {
@@ -202,6 +258,10 @@ class FirebaseAuthRepository implements IAuthRepository {
         'No internet connection. Please try again when you are back online.',
       );
     }
+  }
+
+  Future<void> _initializeGoogleSignIn() {
+    return _googleSignInInitialization ??= _googleSignIn.initialize();
   }
 
   AuthException _mapFirebaseAuthException(FirebaseAuthException error) {
