@@ -10,10 +10,13 @@ import 'package:kairo/core/widgets/kairo_email_pill.dart';
 import 'package:kairo/core/widgets/kairo_icon_button.dart';
 import 'package:kairo/core/widgets/kairo_pill.dart';
 import 'package:kairo/core/widgets/kairo_section_header.dart';
+import 'package:kairo/features/home/utils/status_preset_icons.dart';
 import 'package:kairo/features/home/widgets/focus_progress_item.dart';
 import 'package:kairo/features/home/widgets/home_timer_card.dart';
 import 'package:kairo/features/home/widgets/manual_override_grid.dart';
 import 'package:kairo/features/home/widgets/status_preset_sheet.dart';
+import 'package:kairo/features/mqtt/models/cube_telemetry_entry.dart';
+import 'package:kairo/features/mqtt/services/mqtt_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,9 +26,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final MqttService _mqttService = MqttService.instance;
+
   Future<void> _showPresetSheet({StatusPreset? preset}) async {
     final defaultIconKey = context.statuses.presets.isEmpty
-        ? 'bolt'
+        ? defaultStatusIconKey
         : context.statuses.presets.first.iconKey;
 
     await showModalBottomSheet<void>(
@@ -126,14 +131,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 onActionTap: _showPresetSheet,
               ),
               const SizedBox(height: 20),
-              if (presets.isEmpty)
-                _buildEmptyState(context)
-              else
-                ManualOverrideGrid(
-                  presets: presets,
-                  onPresetTap: _setActive,
-                  onPresetEdit: (preset) => _showPresetSheet(preset: preset),
-                ),
+              ValueListenableBuilder<CubeTelemetryEntry?>(
+                valueListenable: _mqttService.latestTelemetry,
+                builder: (context, telemetry, child) {
+                  if (presets.isEmpty) {
+                    return _buildEmptyState(context);
+                  }
+
+                  return ManualOverrideGrid(
+                    presets: presets,
+                    activeOrientationLabel: telemetry?.orientationLabel,
+                    onPresetTap: _setActive,
+                    onPresetEdit: (preset) => _showPresetSheet(preset: preset),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -186,26 +198,35 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Transform.scale(
-              scale: 0.9,
-              child: const KairoPill(
-                icon: Icons.battery_2_bar_rounded,
-                text: 'Cube - 85%',
-              ),
-            ),
-            const SizedBox(width: 8),
-            Transform.scale(
-              scale: 0.9,
-              child: const KairoIconButton(
-                size: 48,
-                onPressed: null,
-                icon: Icon(Icons.settings),
-              ),
-            ),
-          ],
+        ValueListenableBuilder<CubeTelemetryEntry?>(
+          valueListenable: _mqttService.latestTelemetry,
+          builder: (context, telemetry, child) {
+            final batteryLabel = telemetry?.batteryPercent == null
+                ? 'Cube - --%'
+                : 'Cube - ${telemetry!.batteryPercent}%';
+
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Transform.scale(
+                  scale: 0.9,
+                  child: KairoPill(
+                    icon: Icons.battery_2_bar_rounded,
+                    text: batteryLabel,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Transform.scale(
+                  scale: 0.9,
+                  child: const KairoIconButton(
+                    size: 48,
+                    onPressed: null,
+                    icon: Icon(Icons.settings),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );

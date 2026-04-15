@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:kairo/core/app_routes.dart';
 import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/app_email_input.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/kairo_headline.dart';
@@ -45,8 +45,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         return;
       }
 
-      setState(() => _isLoading = false);
-
       Navigator.push(
         context,
         MaterialPageRoute<void>(
@@ -58,10 +56,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         return;
       }
 
-      setState(() {
-        _isLoading = false;
-        _errorText = error.message;
-      });
+      context.showErrorSnackBar(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -81,8 +82,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             children: [
               AuthHeader(
-                onBackPressed: () =>
-                    Navigator.pushNamed(context, AppRoutes.auth),
+                onBackPressed: () => Navigator.pop(context),
               ),
               const SizedBox(height: 40),
 

@@ -5,6 +5,7 @@ import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/email_password_fields.dart';
 import 'package:kairo/features/auth/widgets/auth_action_section.dart';
 
@@ -25,6 +26,7 @@ class _SignInFormState extends State<SignInForm> {
   String? _passwordError;
   String? _formError;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   Future<void> _submit() async {
     final emailError = validateEmail(_emailController.text);
@@ -49,20 +51,46 @@ class _SignInFormState extends State<SignInForm> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-
+    } on AuthException catch (error) {
       if (!mounted) {
         return;
       }
 
-      Navigator.pushReplacementNamed(context, AppRoutes.main);
-    } on AuthException catch (error) {
       setState(() {
-        _formError = error.message;
+        _formError = null;
       });
+      context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _submitGoogleSignIn() async {
+    if (_isLoading || _isGoogleLoading) {
+      return;
+    }
+
+    setState(() {
+      _formError = null;
+      _isGoogleLoading = true;
+    });
+
+    try {
+      await context.auth.signInWithGoogle();
+    } on AuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      context.showErrorSnackBar(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
         });
       }
     }
@@ -122,6 +150,10 @@ class _SignInFormState extends State<SignInForm> {
           primaryButtonText: _isLoading ? 'Logging In...' : 'Log In',
           isPrimaryLoading: _isLoading,
           onPrimaryPressed: _submit,
+          onSecondaryPressed: _submitGoogleSignIn,
+          secondaryButtonText: _isGoogleLoading
+              ? 'Connecting Google...'
+              : 'Continue with Google',
           formError: _formError,
           footerMessage: 'New to Kairo?',
           footerActionText: 'Sign Up',

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/app_routes.dart';
 import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/app_email_input.dart';
 import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/core/widgets/password_pair_fields.dart';
@@ -31,6 +31,7 @@ class _SignUpFormState extends State<SignUpForm> {
   String? _confirmPasswordError;
   String? _formError;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   Future<void> _submit() async {
     final fullNameError = validateFullName(_fullNameController.text);
@@ -68,20 +69,46 @@ class _SignUpFormState extends State<SignUpForm> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-
+    } on AuthException catch (error) {
       if (!mounted) {
         return;
       }
 
-      Navigator.pushReplacementNamed(context, AppRoutes.verifyEmail);
-    } on AuthException catch (error) {
       setState(() {
-        _formError = error.message;
+        _formError = null;
       });
+      context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _submitGoogleSignIn() async {
+    if (_isLoading || _isGoogleLoading) {
+      return;
+    }
+
+    setState(() {
+      _formError = null;
+      _isGoogleLoading = true;
+    });
+
+    try {
+      await context.auth.signInWithGoogle();
+    } on AuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      context.showErrorSnackBar(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
         });
       }
     }
@@ -150,6 +177,10 @@ class _SignUpFormState extends State<SignUpForm> {
           primaryButtonText: _isLoading ? 'Signing Up...' : 'Sign Up',
           isPrimaryLoading: _isLoading,
           onPrimaryPressed: _submit,
+          onSecondaryPressed: _submitGoogleSignIn,
+          secondaryButtonText: _isGoogleLoading
+              ? 'Connecting Google...'
+              : 'Continue with Google',
           formError: _formError,
           footerMessage: 'Already have an account? ',
           footerActionText: 'Log In',

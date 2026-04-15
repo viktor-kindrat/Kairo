@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/models/local_user.dart';
+import 'package:kairo/core/models/profile_update_result.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/app_email_input.dart';
@@ -11,7 +12,7 @@ import 'package:kairo/core/widgets/kairo_input.dart';
 
 class ProfileAccountSettingsSheet extends StatefulWidget {
   final LocalUser user;
-  final Future<void> Function({
+  final Future<ProfileUpdateResult> Function({
     required String fullName,
     required String email,
     required String roleTitle,
@@ -69,12 +70,44 @@ class _ProfileAccountSettingsSheetState
       return;
     }
 
+    final normalizedCurrentEmail = normalizeEmail(widget.user.email);
+    final normalizedNextEmail = normalizeEmail(_emailController.text);
+
+    if (normalizedCurrentEmail != normalizedNextEmail) {
+      final shouldContinue = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Confirm new email'),
+            content: const Text(
+              'Changing your email will send a confirmation link to the new '
+              'address and you will need to sign in again after confirming it.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Continue'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (shouldContinue != true) {
+        return;
+      }
+    }
+
     setState(() {
       _isSaving = true;
     });
 
     try {
-      await widget.onSave(
+      final result = await widget.onSave(
         fullName: _fullNameController.text,
         email: _emailController.text,
         roleTitle: _roleTitleController.text,
@@ -84,7 +117,7 @@ class _ProfileAccountSettingsSheetState
         return;
       }
 
-      Navigator.pop(context, true);
+      Navigator.pop(context, result);
     } on AuthException catch (error) {
       setState(() {
         _formError = error.message;

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
+import 'package:kairo/features/dashboard/screens/analytics_screen.dart';
 import 'package:kairo/features/home/screens/home_screen.dart';
+import 'package:kairo/features/mqtt/services/mqtt_service.dart';
 import 'package:kairo/features/profile/screens/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -12,13 +15,47 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final MqttService _mqttService = MqttService.instance;
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
+  late final List<Widget> _screens = [
     const HomeScreen(),
-    const Scaffold(body: Center(child: Text('Analytics Screen'))),
+    AnalyticsScreen(),
     const ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeMqtt();
+  }
+
+  Future<void> _initializeMqtt() async {
+    try {
+      await _mqttService.connect();
+      _mqttService.subscribe(MqttService.defaultTopic);
+    } catch (error) {
+      debugPrint('MQTT init error: $error');
+
+      if (!mounted) {
+        return;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+
+        context.showErrorSnackBar('Could not connect to MQTT broker.');
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _mqttService.disconnect();
+    super.dispose();
+  }
 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);

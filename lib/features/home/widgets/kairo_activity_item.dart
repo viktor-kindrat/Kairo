@@ -6,6 +6,7 @@ class KairoActivityItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isActive;
+  final String? activeCaption;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
@@ -13,6 +14,7 @@ class KairoActivityItem extends StatelessWidget {
     required this.icon,
     required this.label,
     this.isActive = false,
+    this.activeCaption,
     this.onTap,
     this.onLongPress,
     super.key,
@@ -53,6 +55,18 @@ class KairoActivityItem extends StatelessWidget {
                   color: isActive ? AppColors.primary : AppColors.textLight,
                 ),
               ),
+              if (isActive && activeCaption != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  activeCaption!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: context.sp(11),
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

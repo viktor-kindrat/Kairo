@@ -4,14 +4,13 @@ import 'package:kairo/core/contracts/auth.contracts.dart';
 import 'package:kairo/core/contracts/profile.contracts.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/models/local_user.dart';
-import 'package:kairo/features/auth/models/pending_email_verification.dart';
+import 'package:kairo/core/models/profile_update_result.dart';
 
 class AuthController extends ChangeNotifier {
   final IAuthRepository _authRepository;
   final IProfileRepository _profileRepository;
 
   LocalUser? _currentUser;
-  PendingEmailVerification? _pendingVerification;
 
   AuthController({
     required IAuthRepository authRepository,
@@ -21,38 +20,17 @@ class AuthController extends ChangeNotifier {
 
   LocalUser? get currentUser => _currentUser;
 
-  PendingEmailVerification? get pendingVerification => _pendingVerification;
-
-  bool get isAuthenticated => _currentUser != null;
-
-  bool get hasPendingVerification => _pendingVerification != null;
-
   Future<void> initialize() async {
-    _currentUser = await _authRepository.getCurrentUser();
-    _pendingVerification = _currentUser == null
-        ? await _authRepository.getPendingVerification()
-        : null;
-  }
-
-  Future<void> cancelPendingVerification() async {
-    await _authRepository.cancelPendingVerification();
-    _pendingVerification = null;
-    notifyListeners();
+    await refreshCurrentUser();
   }
 
   Future<void> deleteAccount() async {
     await _authRepository.deleteAccount();
-    _currentUser = null;
-    _pendingVerification = null;
-    notifyListeners();
+    clearCurrentUser();
   }
 
   Future<void> resetPassword(String email) async {
-    final success = await _authRepository.sendPasswordResetEmail(email);
-
-    if (!success) {
-      throw const AuthException('No account found with this email.');
-    }
+    await _authRepository.sendPasswordResetEmail(email);
   }
 
   Future<LocalUser> signIn({
@@ -65,18 +43,29 @@ class AuthController extends ChangeNotifier {
     return user;
   }
 
-  Future<void> signOut() async {
-    await _authRepository.signOut();
-    _currentUser = null;
+  Future<LocalUser?> signInWithGoogle() async {
+    final user = await _authRepository.signInWithGoogle();
+
+    if (user == null) {
+      return null;
+    }
+
+    _currentUser = user;
     notifyListeners();
+    return user;
   }
 
-  Future<PendingEmailVerification> signUp({
+  Future<void> signOut() async {
+    await _authRepository.signOut();
+    clearCurrentUser();
+  }
+
+  Future<LocalUser> signUp({
     required String fullName,
     required String email,
     required String password,
   }) async {
-    final pendingVerification = await _authRepository.signUp(
+    final user = await _authRepository.signUp(
       LocalUser(
         fullName: fullName.trim(),
         email: email.trim(),
@@ -84,39 +73,59 @@ class AuthController extends ChangeNotifier {
         roleTitle: defaultRoleTitle,
       ),
     );
-
-    _currentUser = null;
-    _pendingVerification = pendingVerification;
-    notifyListeners();
-    return pendingVerification;
-  }
-
-  Future<PendingEmailVerification> resendVerificationCode() async {
-    final pendingVerification = await _authRepository.resendVerificationCode();
-    _pendingVerification = pendingVerification;
-    notifyListeners();
-    return pendingVerification;
-  }
-
-  Future<PendingEmailVerification> updatePendingVerificationEmail(
-    String email,
-  ) async {
-    final pendingVerification = await _authRepository
-        .updatePendingVerificationEmail(email);
-    _pendingVerification = pendingVerification;
-    notifyListeners();
-    return pendingVerification;
-  }
-
-  Future<LocalUser> verifyEmailCode(String code) async {
-    final user = await _authRepository.verifyEmailCode(code);
-    _currentUser = user;
-    _pendingVerification = null;
-    notifyListeners();
+    clearCurrentUser(notify: false);
     return user;
   }
 
-  Future<LocalUser> updateProfile({
+  Future<void> resendVerificationCode() async {
+    await _authRepository.sendEmailVerification();
+  }
+
+  Future<bool> checkEmailVerified() async {
+    final isVerified = await _authRepository.checkEmailVerified();
+
+    if (!isVerified) {
+      return false;
+    }
+
+    final user = await _authRepository.getCurrentUser();
+
+    if (user == null) {
+      throw const AuthException(
+        'Your email is verified, but we could not restore your account. '
+        'Please log in again.',
+      );
+    }
+
+    _currentUser = user;
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> refreshCurrentUser() async {
+    final user = await _authRepository.getCurrentUser();
+
+    if (_currentUser == user) {
+      return;
+    }
+
+    _currentUser = user;
+    notifyListeners();
+  }
+
+  void clearCurrentUser({bool notify = true}) {
+    if (_currentUser == null) {
+      return;
+    }
+
+    _currentUser = null;
+
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  Future<ProfileUpdateResult> updateProfile({
     required String fullName,
     required String email,
     required String roleTitle,
@@ -126,16 +135,21 @@ class AuthController extends ChangeNotifier {
       throw const AuthException('Please log in to update your profile.');
     }
 
-    final updatedUser = await _profileRepository.updateProfile(
+    final updateResult = await _profileRepository.updateProfile(
       fullName: fullName,
       email: email,
       roleTitle: roleTitle,
       password: password,
     );
 
-    _currentUser = updatedUser;
+    if (updateResult.requiresEmailReconfirmation) {
+      clearCurrentUser();
+      return updateResult;
+    }
+
+    _currentUser = updateResult.user;
     notifyListeners();
-    return updatedUser;
+    return updateResult;
   }
 
   Future<LocalUser> updateAvatar(String? avatarPath) async {

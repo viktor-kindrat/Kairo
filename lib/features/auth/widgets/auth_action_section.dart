@@ -4,7 +4,7 @@ import 'package:kairo/core/widgets/inline_form_error_text.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/core/widgets/text_splitter.dart';
 import 'package:kairo/features/auth/widgets/auth_footer.dart';
-import 'package:kairo/features/auth/widgets/slack_auth_button.dart';
+import 'package:kairo/features/auth/widgets/google_auth_button.dart';
 
 class AuthActionSection extends StatelessWidget {
   final String footerActionText;
@@ -28,7 +28,7 @@ class AuthActionSection extends StatelessWidget {
     this.formError,
     this.isPrimaryLoading = false,
     this.onSecondaryPressed,
-    this.secondaryButtonText = 'Continue with Slack',
+    this.secondaryButtonText = 'Continue with Google',
     this.showSecondaryAction = true,
   });
 
@@ -50,7 +50,7 @@ class AuthActionSection extends StatelessWidget {
           SizedBox(height: context.sp(32)),
           const TextSplitter(content: 'or'),
           SizedBox(height: context.sp(32)),
-          SlackAuthButton(
+          GoogleAuthButton(
             text: secondaryButtonText,
             onPressed: onSecondaryPressed ?? () {},
           ),

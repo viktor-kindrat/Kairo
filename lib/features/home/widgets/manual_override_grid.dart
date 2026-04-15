@@ -5,6 +5,7 @@ import 'package:kairo/features/home/widgets/kairo_activity_item.dart';
 
 class ManualOverrideGrid extends StatelessWidget {
   final List<StatusPreset> presets;
+  final String? activeOrientationLabel;
   final ValueChanged<StatusPreset> onPresetTap;
   final ValueChanged<StatusPreset> onPresetEdit;
 
@@ -12,6 +13,7 @@ class ManualOverrideGrid extends StatelessWidget {
     required this.presets,
     required this.onPresetTap,
     required this.onPresetEdit,
+    this.activeOrientationLabel,
     super.key,
   });
 
@@ -29,6 +31,7 @@ class ManualOverrideGrid extends StatelessWidget {
               icon: iconForStatusKey(preset.iconKey),
               label: preset.label,
               isActive: preset.isActive,
+              activeCaption: preset.isActive ? activeOrientationLabel : null,
               onTap: () => onPresetTap(preset),
               onLongPress: () => onPresetEdit(preset),
             ),

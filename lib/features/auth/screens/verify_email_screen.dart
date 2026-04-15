@@ -1,19 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:kairo/core/app_routes.dart';
 import 'package:kairo/core/constants.dart';
 import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/open_mail_client.dart';
 import 'package:kairo/core/utils/resend_countdown_controller.dart';
-import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
-import 'package:kairo/core/widgets/inline_form_error_text.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
-import 'package:kairo/core/widgets/kairo_info_card.dart';
-import 'package:kairo/core/widgets/kairo_input.dart';
 import 'package:kairo/features/auth/widgets/auth_header.dart';
-import 'package:kairo/features/auth/widgets/change_email_sheet.dart';
 import 'package:kairo/features/auth/widgets/email_delivery_hero.dart';
 import 'package:kairo/features/auth/widgets/resend_countdown_footer.dart';
 
@@ -25,11 +20,8 @@ class VerifyEmailScreen extends StatefulWidget {
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-  final TextEditingController _codeController = TextEditingController();
   late final ResendCountdownController _countdownController;
 
-  String? _codeError;
-  String? _formError;
   bool _isVerifying = false;
   bool _isResending = false;
 
@@ -41,40 +33,27 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     )..start();
   }
 
-  Future<void> _verifyCode() async {
-    final verificationCode = _codeController.text.trim();
-
-    setState(() {
-      _codeError = verificationCode.isEmpty
-          ? 'Please enter the verification code.'
-          : null;
-      _formError = null;
-    });
-
-    if (_codeError != null) {
-      return;
-    }
-
+  Future<void> _confirmEmailVerified() async {
     setState(() {
       _isVerifying = true;
     });
 
     try {
-      await context.auth.verifyEmailCode(verificationCode);
+      final isVerified = await context.auth.checkEmailVerified();
 
       if (!mounted) {
         return;
       }
 
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.main,
-        (route) => false,
-      );
+      if (!isVerified) {
+        context.showErrorSnackBar('Email is not verified yet.');
+      }
     } on AuthException catch (error) {
-      setState(() {
-        _formError = error.message;
-      });
+      if (!mounted) {
+        return;
+      }
+
+      context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
         setState(() {
@@ -91,23 +70,23 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
     setState(() {
       _isResending = true;
-      _formError = null;
     });
 
     try {
       await context.auth.resendVerificationCode();
       _countdownController.start();
-      _codeController.clear();
 
       if (!mounted) {
         return;
       }
 
-      context.showSuccessSnackBar('A fresh verification code was generated.');
+      context.showSuccessSnackBar('A fresh verification email was sent.');
     } on AuthException catch (error) {
-      setState(() {
-        _formError = error.message;
-      });
+      if (!mounted) {
+        return;
+      }
+
+      context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
         setState(() {
@@ -117,83 +96,30 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     }
   }
 
-  Future<void> _showChangeEmailSheet(String currentEmail) async {
-    final didSave = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      builder: (sheetContext) {
-        return ChangeEmailSheet(
-          initialEmail: currentEmail,
-          onSubmit: (email) async {
-            await context.auth.updatePendingVerificationEmail(email);
-          },
-        );
-      },
-    );
+  Future<void> _signOutToAuth() async {
+    try {
+      await context.auth.signOut();
+    } on AuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
 
-    if (didSave != true || !mounted) {
-      return;
+      context.showErrorSnackBar(error.message);
     }
-
-    _countdownController.start();
-    _codeController.clear();
-    context.showSuccessSnackBar('Verification email was updated and resent.');
-  }
-
-  Future<void> _cancelVerification() async {
-    await context.auth.cancelPendingVerification();
-
-    if (!mounted) {
-      return;
-    }
-
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.auth,
-      (route) => false,
-    );
-  }
-
-  void _clearErrors() {
-    if (_codeError == null && _formError == null) {
-      return;
-    }
-
-    setState(() {
-      _codeError = null;
-      _formError = null;
-    });
   }
 
   @override
   void dispose() {
     _countdownController.dispose();
-    _codeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final pendingVerification = context.auth.pendingVerification;
-
-    if (pendingVerification == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.auth,
-          (route) => false,
-        );
-      });
-
-      return const Scaffold(body: SizedBox.shrink());
-    }
-
-    final pendingEmail = pendingVerification.user.email;
+    final pendingEmail =
+        FirebaseAuth.instance.currentUser?.email ??
+        context.auth.currentUser?.email ??
+        'your email address';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -205,44 +131,28 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             children: [
               AuthHeader(
                 backText: 'Sign Up',
-                onBackPressed: _cancelVerification,
+                onBackPressed: _signOutToAuth,
               ),
               const SizedBox(height: 40),
               EmailDeliveryHero(
                 email: pendingEmail,
                 headline: 'Verify your email.',
-                subHeadline: 'Enter the confirmation code we sent to',
+                subHeadline:
+                    'We sent a verification link to your email address',
               ),
               const SizedBox(height: 32),
-              KairoInput(
-                controller: _codeController,
-                hintText: 'Verification code',
-                keyboardType: TextInputType.number,
-                errorText: _codeError,
-                onChanged: (_) => _clearErrors(),
-              ),
-              const SizedBox(height: 24),
-              if (_formError != null) ...[
-                InlineFormErrorText(message: _formError!),
-                const SizedBox(height: 12),
-              ],
               KairoButton(
-                text: _isVerifying ? 'Verifying...' : 'Verify Email',
+                text: _isVerifying
+                    ? 'Checking Verification...'
+                    : 'I Confirmed My Email',
                 isLoading: _isVerifying,
-                onPressed: _verifyCode,
+                onPressed: _confirmEmailVerified,
               ),
               const SizedBox(height: 16),
               KairoButton(
                 text: 'Open Email App',
                 isOutlined: true,
                 onPressed: () => MailUtils.openMailApp(context),
-              ),
-              const SizedBox(height: 32),
-              KairoInfoCard(
-                text:
-                    'Local demo mode: the generated verification code is '
-                    '${pendingVerification.code}.',
-                boldText: pendingVerification.code,
               ),
               const SizedBox(height: 24),
               Center(
@@ -255,20 +165,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       onTap: _resendCode,
                     );
                   },
-                ),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: TextButton(
-                  onPressed: () => _showChangeEmailSheet(pendingEmail),
-                  child: Text(
-                    'Use a different email',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: context.sp(14),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
                 ),
               ),
             ],
