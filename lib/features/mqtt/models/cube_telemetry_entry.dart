@@ -46,12 +46,9 @@ class CubeTelemetryEntry {
         receivedAt: receivedAt,
         orientation: decoded['orientation'] as String?,
         statusLabel:
-            decoded['statusLabel'] as String? ??
-            decoded['status'] as String?,
+            decoded['statusLabel'] as String? ?? decoded['status'] as String?,
         statusIconKey: decoded['statusIconKey'] as String?,
-        batteryPercent: _asInt(
-          decoded['batteryPercent'] ?? decoded['battery'],
-        ),
+        batteryPercent: _asInt(decoded['batteryPercent'] ?? decoded['battery']),
         x: _asDouble(decoded['x']),
         y: _asDouble(decoded['y']),
         z: _asDouble(decoded['z']),

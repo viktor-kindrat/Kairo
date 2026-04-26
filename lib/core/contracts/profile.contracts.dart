@@ -11,5 +11,5 @@ abstract class IProfileRepository {
     required String password,
   });
 
-  Future<LocalUser> updateAvatar(String? avatarPath);
+  Future<LocalUser> updateAvatar(String? avatarUrl);
 }

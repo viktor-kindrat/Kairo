@@ -34,6 +34,7 @@ class LocalAuthRepository implements IAuthRepository {
 
     return storedUser;
   }
+
   @override
   Future<bool> checkEmailVerified() async {
     final currentUser = _userStore.readUser();

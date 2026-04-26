@@ -81,9 +81,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             children: [
-              AuthHeader(
-                onBackPressed: () => Navigator.pop(context),
-              ),
+              AuthHeader(onBackPressed: () => Navigator.pop(context)),
               const SizedBox(height: 40),
 
               SvgPicture.asset('assets/illustrations/lock.svg', height: 240),

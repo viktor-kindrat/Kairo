@@ -62,9 +62,7 @@ class MqttService {
       if (client.connectionStatus?.state != MqttConnectionState.connected) {
         connectionState.value =
             client.connectionStatus?.state ?? MqttConnectionState.faulted;
-        debugPrint(
-          'MQTT connection failed: ${client.connectionStatus?.state}',
-        );
+        debugPrint('MQTT connection failed: ${client.connectionStatus?.state}');
         client.disconnect();
         return;
       }
@@ -125,8 +123,7 @@ class MqttService {
         return;
       }
 
-      final payload =
-          messages.first.payload as MqttPublishMessage;
+      final payload = messages.first.payload as MqttPublishMessage;
       final rawMessage = MqttPublishPayload.bytesToStringAsString(
         payload.payload.message,
       );

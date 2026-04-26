@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum CubeSide {
-  faceUp,
-  faceDown,
-  left,
-  right,
-  forward,
-  backward,
-}
+enum CubeSide { faceUp, faceDown, left, right, forward, backward }
 
 class CubeSideConfig {
   final CubeSide side;

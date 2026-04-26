@@ -13,26 +13,25 @@ import 'package:kairo/features/auth/screens/auth_screen.dart';
 import 'package:kairo/features/auth/screens/forgot_password_screen.dart';
 import 'package:kairo/features/auth/screens/verify_email_screen.dart';
 import 'package:kairo/features/home/controllers/status_controller.dart';
+import 'package:kairo/features/home/repositories/firestore_status_preset_repository.dart';
 import 'package:kairo/features/home/repositories/local_status_preset_repository.dart';
 import 'package:kairo/features/main/main_screen.dart';
-import 'package:kairo/features/profile/repositories/local_profile_repository.dart';
+import 'package:kairo/features/profile/repositories/firestore_profile_repository.dart';
 import 'package:kairo/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final preferences = await SharedPreferences.getInstance();
   final userStore = LocalUserStore(preferences);
   final authRepository = FirebaseAuthRepository(userStore: userStore);
-  final profileRepository = LocalProfileRepository(
-    preferences,
-    userStore: userStore,
+  final localStatusRepository = LocalStatusPresetRepository(preferences);
+  final profileRepository = FirestoreProfileRepository(userStore: userStore);
+  final statusRepository = FirestoreStatusPresetRepository(
+    localRepository: localStatusRepository,
   );
-  final statusRepository = LocalStatusPresetRepository(preferences);
   final authController = AuthController(
     authRepository: authRepository,
     profileRepository: profileRepository,
