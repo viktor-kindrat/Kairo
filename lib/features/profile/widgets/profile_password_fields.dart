@@ -8,6 +8,7 @@ class ProfilePasswordFields extends StatelessWidget {
   final String? confirmPasswordError;
   final TextEditingController currentPasswordController;
   final String? currentPasswordError;
+  final bool showCurrentPassword;
   final TextEditingController newPasswordController;
   final String? newPasswordError;
   final ValueChanged<String> onChanged;
@@ -20,6 +21,7 @@ class ProfilePasswordFields extends StatelessWidget {
     this.confirmPasswordError,
     this.currentPasswordError,
     this.newPasswordError,
+    this.showCurrentPassword = true,
     super.key,
   });
 
@@ -27,18 +29,22 @@ class ProfilePasswordFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AppPasswordInput(
-          controller: currentPasswordController,
-          hintText: 'Current Password',
-          errorText: currentPasswordError,
-          onChanged: onChanged,
-        ),
-        SizedBox(height: context.sp(16)),
+        if (showCurrentPassword) ...[
+          AppPasswordInput(
+            controller: currentPasswordController,
+            hintText: 'Current Password',
+            errorText: currentPasswordError,
+            onChanged: onChanged,
+          ),
+          SizedBox(height: context.sp(16)),
+        ],
         PasswordPairFields(
           passwordController: newPasswordController,
           confirmPasswordController: confirmPasswordController,
-          passwordHintText: 'New Password',
-          confirmPasswordHintText: 'Confirm New Password',
+          passwordHintText: showCurrentPassword ? 'New Password' : 'Password',
+          confirmPasswordHintText: showCurrentPassword
+              ? 'Confirm New Password'
+              : 'Confirm Password',
           passwordError: newPasswordError,
           confirmPasswordError: confirmPasswordError,
           onPasswordChanged: onChanged,

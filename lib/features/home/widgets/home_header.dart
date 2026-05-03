@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/models/local_user.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
-import 'package:kairo/core/widgets/kairo_icon_button.dart';
 import 'package:kairo/core/widgets/kairo_pill.dart';
-import 'package:kairo/features/mqtt/models/cube_telemetry_entry.dart';
 
 class HomeHeader extends StatelessWidget {
+  final int? batteryPercent;
+  final DateTime now;
   final LocalUser? user;
-  final ValueNotifier<CubeTelemetryEntry?> latestTelemetry;
 
   const HomeHeader({
-    required this.latestTelemetry,
+    required this.now,
     required this.user,
+    this.batteryPercent,
     super.key,
   });
 
@@ -34,7 +34,7 @@ class HomeHeader extends StatelessWidget {
               ),
             ),
             Text(
-              _formatToday(),
+              _formatToday(now),
               style: TextStyle(
                 color: const Color(0xFF9EA0AE),
                 fontSize: context.sp(13),
@@ -42,35 +42,14 @@ class HomeHeader extends StatelessWidget {
             ),
           ],
         ),
-        ValueListenableBuilder<CubeTelemetryEntry?>(
-          valueListenable: latestTelemetry,
-          builder: (context, telemetry, child) {
-            final batteryLabel = telemetry?.batteryPercent == null
+        Transform.scale(
+          scale: 0.9,
+          child: KairoPill(
+            icon: Icons.battery_2_bar_rounded,
+            text: batteryPercent == null
                 ? 'Cube - --%'
-                : 'Cube - ${telemetry!.batteryPercent}%';
-
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Transform.scale(
-                  scale: 0.9,
-                  child: KairoPill(
-                    icon: Icons.battery_2_bar_rounded,
-                    text: batteryLabel,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Transform.scale(
-                  scale: 0.9,
-                  child: const KairoIconButton(
-                    size: 48,
-                    onPressed: null,
-                    icon: Icon(Icons.settings),
-                  ),
-                ),
-              ],
-            );
-          },
+                : 'Cube - $batteryPercent%',
+          ),
         ),
       ],
     );
@@ -81,7 +60,7 @@ class HomeHeader extends StatelessWidget {
     return parts.firstWhere((part) => part.isNotEmpty, orElse: () => 'Guest');
   }
 
-  String _formatToday() {
+  String _formatToday(DateTime date) {
     const weekdays = [
       'Monday',
       'Tuesday',
@@ -105,9 +84,7 @@ class HomeHeader extends StatelessWidget {
       'November',
       'December',
     ];
-    final today = DateTime.now();
-
-    return '${weekdays[today.weekday - 1]}, '
-        '${months[today.month - 1]} ${today.day}, ${today.year}';
+    return '${weekdays[date.weekday - 1]}, '
+        '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

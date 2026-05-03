@@ -10,7 +10,19 @@ mixin AuthSessionActions on ChangeNotifier {
   IProfileRepository get profileRepository;
   void setCurrentUser(LocalUser? user, {bool notify});
 
+  bool get needsReauthenticationForSensitiveAction {
+    return authRepository.needsReauthenticationForSensitiveAction;
+  }
+
+  bool get requiresPasswordForReauthentication {
+    return authRepository.requiresPasswordForReauthentication;
+  }
+
   Future<void> deleteAccount() => _clearAfter(authRepository.deleteAccount());
+
+  Future<void> reauthenticateForSensitiveAction({String? password}) {
+    return authRepository.reauthenticate(password: password);
+  }
 
   Future<void> resetPassword(String email) {
     return authRepository.sendPasswordResetEmail(email);

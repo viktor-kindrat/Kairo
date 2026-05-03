@@ -6,8 +6,8 @@ import 'package:kairo/core/models/local_user.dart';
 import 'package:kairo/core/models/profile_update_result.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
+import 'package:kairo/features/profile/utils/delete_account_flow.dart';
 import 'package:kairo/features/profile/utils/profile_avatar_actions.dart';
-import 'package:kairo/features/profile/utils/profile_avatar_storage.dart';
 import 'package:kairo/features/profile/widgets/background_glow.dart';
 import 'package:kairo/features/profile/widgets/no_profile_view.dart';
 import 'package:kairo/features/profile/widgets/profile_account_settings_sheet.dart';
@@ -23,6 +23,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _imagePicker = ImagePicker();
+  bool _isAvatarBusy = false;
 
   Future<void> _openAccountSettings(LocalUser user) async {
     final authController = context.auth;
@@ -91,14 +92,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _logOut() => context.auth.signOut();
 
   Future<void> _deleteAccount() async {
-    final authController = context.auth;
-    final statusController = context.statuses;
-    final avatarUrl = authController.currentUser?.avatarUrl;
+    await deleteProfileAccount(
+      context: context,
+      authController: context.auth,
+      statusController: context.statuses,
+    );
+  }
 
-    await statusController.clear();
-    await ProfileAvatarStorage.deleteAvatar(avatarUrl);
-    await authController.deleteAccount();
-    await statusController.loadOrSeedDefaults();
+  Future<void> _showAvatarActions(LocalUser user) async {
+    if (_isAvatarBusy) {
+      return;
+    }
+
+    await showProfileAvatarActions(
+      context: context,
+      imagePicker: _imagePicker,
+      onBusyChanged: _setAvatarBusy,
+      user: user,
+    );
+  }
+
+  void _setAvatarBusy(bool isBusy) {
+    if (!mounted || _isAvatarBusy == isBusy) {
+      return;
+    }
+
+    setState(() => _isAvatarBusy = isBusy);
   }
 
   @override
@@ -125,15 +144,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           ProfileContent(
             user: user,
-            onAvatarTap: () => showProfileAvatarActions(
-              context: context,
-              imagePicker: _imagePicker,
-              user: user,
-            ),
+            onAvatarTap: () => _showAvatarActions(user),
             onChangePassword: () => _openPasswordSettings(user),
             onDeleteAccount: _deleteAccount,
             onEditAccount: () => _openAccountSettings(user),
             onLogOut: _logOut,
+          ),
+          if (_isAvatarBusy) const _AvatarBusyOverlay(),
+        ],
+      ),
+    );
+  }
+}
+
+class _AvatarBusyOverlay extends StatelessWidget {
+  const _AvatarBusyOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          const ModalBarrier(color: Colors.black26, dismissible: false),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const CircularProgressIndicator(),
+            ),
           ),
         ],
       ),

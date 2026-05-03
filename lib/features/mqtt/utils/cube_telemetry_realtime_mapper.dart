@@ -5,9 +5,11 @@ extension CubeTelemetryRealtimeMapper on CubeTelemetryEntry {
     final map = <String, Object?>{
       'rawPayload': rawPayload,
       'orientation': orientation,
+      'statusId': statusId,
       'orientationLabel': orientationLabel,
       'statusLabel': statusLabel,
-      'statusIconKey': statusIconKey,
+      'slackEmojiCode': slackEmojiCode,
+      'cubeFace': cubeFace,
       'resolvedStatusLabel': resolvedStatusLabel,
       'batteryPercent': batteryPercent,
       'x': x,

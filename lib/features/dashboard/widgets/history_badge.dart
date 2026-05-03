@@ -3,10 +3,10 @@ import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 
 class HistoryBadge extends StatelessWidget {
+  final String? emoji;
   final String label;
-  final IconData? icon;
 
-  const HistoryBadge({required this.label, this.icon, super.key});
+  const HistoryBadge({required this.label, this.emoji, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +19,8 @@ class HistoryBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
-            Icon(icon, size: context.sp(14), color: AppColors.primary),
+          if (emoji != null) ...[
+            Text(emoji!, style: TextStyle(fontSize: context.sp(14))),
             const SizedBox(width: 6),
           ],
           Text(

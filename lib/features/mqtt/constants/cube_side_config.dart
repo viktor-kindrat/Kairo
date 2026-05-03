@@ -19,13 +19,13 @@ class CubeSideConfig {
 const List<CubeSideConfig> cubeSideConfigs = [
   CubeSideConfig(
     side: CubeSide.faceUp,
-    value: 'face_up',
+    value: 'faceUp',
     label: 'Face Up',
     icon: Icons.flip_to_front_outlined,
   ),
   CubeSideConfig(
     side: CubeSide.faceDown,
-    value: 'face_down',
+    value: 'faceDown',
     label: 'Face Down',
     icon: Icons.flip_to_back_outlined,
   ),
@@ -60,7 +60,7 @@ CubeSideConfig? cubeSideConfigForValue(String? value) {
     return null;
   }
 
-  final normalized = value.trim().toLowerCase();
+  final normalized = value.trim();
 
   return cubeSideConfigs
       .where((config) => config.value == normalized)

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
-import 'package:kairo/features/profile/widgets/profile_settings_tile.dart';
+import 'package:kairo/features/profile/widgets/slack_connection_tile.dart';
 
-class ProfileGeneralSection extends StatelessWidget {
-  const ProfileGeneralSection({super.key});
+class SlackConnectionCard extends StatelessWidget {
+  const SlackConnectionCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,12 +19,7 @@ class ProfileGeneralSection extends StatelessWidget {
           ),
         ],
       ),
-      child: ProfileSettingsTile(
-        icon: Icons.dark_mode_outlined,
-        title: 'App Theme',
-        subtitle: 'Dark mode switch',
-        trailing: Switch(value: false, onChanged: (value) {}),
-      ),
+      child: const SlackConnectionTile(),
     );
   }
 }

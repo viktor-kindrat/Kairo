@@ -29,6 +29,8 @@ AuthException mapFirebaseAuthException(FirebaseAuthException error) {
       return const AuthException(
         'No internet connection. Please try again when you are back online.',
       );
+    case 'requires-recent-login':
+      return const RecentLoginRequiredException();
     default:
       return AuthException(
         error.message ?? 'Authentication failed. Please try again.',

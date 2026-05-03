@@ -3,6 +3,7 @@ import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 
 class MetricChip extends StatelessWidget {
+  final String? emoji;
   final String label;
   final String value;
   final IconData? icon;
@@ -10,6 +11,7 @@ class MetricChip extends StatelessWidget {
   const MetricChip({
     required this.label,
     required this.value,
+    this.emoji,
     this.icon,
     super.key,
   });
@@ -39,6 +41,10 @@ class MetricChip extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (emoji != null) ...[
+                Text(emoji!, style: TextStyle(fontSize: context.sp(16))),
+                const SizedBox(width: 8),
+              ],
               if (icon != null) ...[
                 Icon(icon, size: context.sp(16), color: AppColors.primary),
                 const SizedBox(width: 8),

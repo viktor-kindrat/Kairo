@@ -53,6 +53,36 @@ class FirebaseGoogleAuthClient {
     }
   }
 
+  Future<void> reauthenticate() async {
+    await _session.ensureConnection();
+    await _initialize();
+
+    final currentUser = _firebaseAuth.currentUser;
+
+    if (currentUser == null) {
+      throw const AuthException('Please sign in again to continue.');
+    }
+
+    try {
+      final googleUser = await _googleSignIn.authenticate();
+      final idToken = googleUser.authentication.idToken;
+
+      if (idToken == null) {
+        throw const AuthException(
+          'Google sign-in did not return a valid identity token.',
+        );
+      }
+
+      final credential = GoogleAuthProvider.credential(idToken: idToken);
+      await currentUser.reauthenticateWithCredential(credential);
+      await currentUser.getIdToken(true);
+    } on GoogleSignInException catch (error) {
+      _throwReauthenticationException(error);
+    } on FirebaseAuthException catch (error) {
+      throw mapFirebaseAuthException(error);
+    }
+  }
+
   Future<void> signOutIfInitialized() async {
     if (_initialization != null) {
       await _googleSignIn.signOut();
@@ -75,6 +105,23 @@ class FirebaseGoogleAuthClient {
       default:
         throw AuthException(
           error.description ?? 'Google sign-in failed. Please try again.',
+        );
+    }
+  }
+
+  Never _throwReauthenticationException(GoogleSignInException error) {
+    switch (error.code) {
+      case GoogleSignInExceptionCode.canceled:
+      case GoogleSignInExceptionCode.interrupted:
+        throw const AuthException('Google reauthentication was canceled.');
+      case GoogleSignInExceptionCode.uiUnavailable:
+        throw const AuthException(
+          'Google sign-in is unavailable on this device right now.',
+        );
+      default:
+        throw AuthException(
+          error.description ??
+              'Google reauthentication failed. Please try again.',
         );
     }
   }

@@ -38,10 +38,12 @@ class _ProfilePasswordSettingsSheetState
   bool _isSaving = false;
 
   Future<void> _save() async {
-    final currentPasswordError = validateCurrentPassword(
-      currentPassword: widget.user.password,
-      enteredPassword: _currentPasswordController.text,
-    );
+    final currentPasswordError = _hasPassword
+        ? validateCurrentPassword(
+            currentPassword: widget.user.password,
+            enteredPassword: _currentPasswordController.text,
+          )
+        : null;
     final newPasswordError = validatePassword(_newPasswordController.text);
     final confirmPasswordError = validatePasswordConfirmation(
       password: _newPasswordController.text,
@@ -115,9 +117,10 @@ class _ProfilePasswordSettingsSheetState
   @override
   Widget build(BuildContext context) {
     return AppFormSheetLayout(
-      title: 'Change Password',
-      description:
-          'Confirm your current password, then choose a new secure one.',
+      title: _hasPassword ? 'Change Password' : 'Set Password',
+      description: _hasPassword
+          ? 'Confirm your current password, then choose a new secure one.'
+          : 'Create a secure password for your account.',
       children: [
         ProfilePasswordFields(
           confirmPasswordController: _confirmPasswordController,
@@ -127,6 +130,7 @@ class _ProfilePasswordSettingsSheetState
           newPasswordController: _newPasswordController,
           newPasswordError: _newPasswordError,
           onChanged: (_) => _clearErrors(),
+          showCurrentPassword: _hasPassword,
         ),
         if (_formError != null) ...[
           SizedBox(height: context.sp(16)),
@@ -134,11 +138,15 @@ class _ProfilePasswordSettingsSheetState
         ],
         SizedBox(height: context.sp(24)),
         KairoButton(
-          text: _isSaving ? 'Updating...' : 'Update Password',
+          text: _isSaving
+              ? (_hasPassword ? 'Updating...' : 'Saving...')
+              : (_hasPassword ? 'Update Password' : 'Save Password'),
           isLoading: _isSaving,
           onPressed: _save,
         ),
       ],
     );
   }
+
+  bool get _hasPassword => widget.user.password.trim().isNotEmpty;
 }

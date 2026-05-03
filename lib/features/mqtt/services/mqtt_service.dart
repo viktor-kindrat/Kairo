@@ -8,20 +8,11 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MqttService {
-  static const String defaultTopic = 'kairo/cube/orientation';
-  static const int historyLimit = 50;
-
   static final MqttService instance = MqttService._();
 
-  final ValueNotifier<String> latestMessage = ValueNotifier<String>(
-    'No MQTT data received yet.',
-  );
-  final ValueNotifier<CubeTelemetryEntry?> latestTelemetry =
-      ValueNotifier<CubeTelemetryEntry?>(null);
-  final ValueNotifier<List<CubeTelemetryEntry>> telemetryHistory =
-      ValueNotifier<List<CubeTelemetryEntry>>(const []);
   final ValueNotifier<MqttConnectionState> connectionState =
       ValueNotifier<MqttConnectionState>(MqttConnectionState.disconnected);
+  final ValueNotifier<String?> subscribedTopic = ValueNotifier<String?>(null);
 
   final RealtimeTelemetryRepository _telemetryRepository =
       RealtimeTelemetryRepository();
@@ -29,6 +20,8 @@ class MqttService {
   StreamSubscription<List<MqttReceivedMessage<MqttMessage?>>?>? _updatesSub;
 
   MqttService._();
+
+  static String topicForUser(String uid) => '/kairo/cube/$uid';
 
   Future<void> connect() async {
     if (connectionState.value == MqttConnectionState.connected) {
@@ -85,6 +78,7 @@ class MqttService {
 
     final client = _client;
     _client = null;
+    subscribedTopic.value = null;
 
     if (client != null) {
       client.disconnect();
@@ -103,6 +97,7 @@ class MqttService {
     }
 
     client.subscribe(topic, MqttQos.atMostOnce);
+    subscribedTopic.value = topic;
   }
 
   void _handleAutoReconnect() {
@@ -132,12 +127,6 @@ class MqttService {
       );
       final telemetryEntry = CubeTelemetryEntry.fromPayload(rawMessage);
 
-      latestMessage.value = rawMessage;
-      latestTelemetry.value = telemetryEntry;
-      telemetryHistory.value = [
-        telemetryEntry,
-        ...telemetryHistory.value,
-      ].take(historyLimit).toList(growable: false);
       unawaited(_telemetryRepository.recordEvent(telemetryEntry));
     });
   }

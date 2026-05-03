@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
+import 'package:kairo/core/utils/slack_emoji.dart';
 import 'package:kairo/features/dashboard/widgets/history_badge.dart';
-import 'package:kairo/features/home/utils/status_preset_icons.dart';
 import 'package:kairo/features/mqtt/models/cube_telemetry_entry.dart';
 
 class TelemetryHistoryCard extends StatelessWidget {
@@ -40,24 +40,13 @@ class TelemetryHistoryCard extends StatelessWidget {
                 if (entry.statusLabel != null)
                   HistoryBadge(
                     label: entry.resolvedStatusLabel,
-                    icon: entry.statusIconKey == null
-                        ? null
-                        : iconForStatusKey(entry.statusIconKey!),
+                    emoji: slackEmojiGlyph(entry.slackEmojiCode),
                   ),
                 if (entry.batteryPercent != null)
                   HistoryBadge(label: 'Battery ${entry.batteryPercent}%'),
               ],
             ),
           ],
-          const SizedBox(height: 12),
-          Text(
-            entry.rawPayload,
-            style: TextStyle(
-              fontSize: context.sp(13),
-              height: 1.5,
-              color: AppColors.textDark,
-            ),
-          ),
         ],
       ),
     );

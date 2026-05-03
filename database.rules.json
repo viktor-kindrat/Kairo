@@ -3,7 +3,19 @@
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid"
+        ".write": false,
+        "integrations": {
+          ".write": false
+        },
+        "mqtt_events": {
+          ".write": "auth != null && auth.uid == $uid && root.child('users').child($uid).child('integrations').child('slack').child('connected').val() == true",
+          ".indexOn": ["receivedAt"]
+        },
+        "mqtt_analytics": {
+          "summary": {
+            ".write": "auth != null && auth.uid == $uid && root.child('users').child($uid).child('integrations').child('slack').child('connected').val() == true"
+          }
+        }
       }
     }
   }

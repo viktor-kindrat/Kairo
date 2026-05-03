@@ -10,6 +10,7 @@ Future<void> showProfileAvatarActions({
   required BuildContext context,
   required ImagePicker imagePicker,
   required LocalUser user,
+  required ValueChanged<bool> onBusyChanged,
 }) async {
   await showModalBottomSheet<void>(
     context: context,
@@ -19,24 +20,40 @@ Future<void> showProfileAvatarActions({
         hasAvatar: user.avatarUrl != null,
         onPickFromLibrary: () async {
           Navigator.pop(sheetContext);
-          await _pickAvatarImage(context, imagePicker, user);
+          await _pickAvatarImage(context, imagePicker, user, onBusyChanged);
         },
         onRemove: user.avatarUrl == null
             ? null
             : () async {
                 Navigator.pop(sheetContext);
-                await removeProfileAvatar(context, user);
+                await removeProfileAvatar(context, user, onBusyChanged);
               },
       );
     },
   );
 }
 
-Future<void> removeProfileAvatar(BuildContext context, LocalUser user) async {
+Future<void> removeProfileAvatar(
+  BuildContext context,
+  LocalUser user,
+  ValueChanged<bool> onBusyChanged,
+) async {
   final authController = context.auth;
 
-  await authController.updateAvatar(null);
-  await ProfileAvatarStorage.deleteAvatar(user.avatarUrl);
+  onBusyChanged(true);
+
+  try {
+    await authController.updateAvatar(null);
+    await ProfileAvatarStorage.deleteAvatar(user.avatarUrl);
+  } catch (error) {
+    if (context.mounted) {
+      context.showErrorSnackBar(error.toString());
+    }
+
+    return;
+  } finally {
+    onBusyChanged(false);
+  }
 
   if (!context.mounted) {
     return;
@@ -49,6 +66,7 @@ Future<void> _pickAvatarImage(
   BuildContext context,
   ImagePicker imagePicker,
   LocalUser user,
+  ValueChanged<bool> onBusyChanged,
 ) async {
   final pickedFile = await imagePicker.pickImage(
     source: ImageSource.gallery,
@@ -63,10 +81,25 @@ Future<void> _pickAvatarImage(
   final previousAvatarUrl = user.avatarUrl;
   // Timestamped names avoid stale image cache; a later cleanup job can remove
   // rare orphan objects after app crashes or interrupted profile saves.
-  final uploadedAvatarUrl = await ProfileAvatarStorage.uploadAvatar(pickedFile);
+  onBusyChanged(true);
+
+  final String uploadedAvatarUrl;
+
+  try {
+    uploadedAvatarUrl = await ProfileAvatarStorage.uploadAvatar(pickedFile);
+  } catch (error) {
+    onBusyChanged(false);
+
+    if (context.mounted) {
+      context.showErrorSnackBar(error.toString());
+    }
+
+    return;
+  }
 
   if (!context.mounted) {
     await ProfileAvatarStorage.deleteAvatar(uploadedAvatarUrl);
+    onBusyChanged(false);
     return;
   }
 
@@ -82,6 +115,8 @@ Future<void> _pickAvatarImage(
 
     context.showErrorSnackBar(error.toString());
     return;
+  } finally {
+    onBusyChanged(false);
   }
 
   if (!context.mounted) {

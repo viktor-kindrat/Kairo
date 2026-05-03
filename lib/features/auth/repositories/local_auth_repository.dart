@@ -14,6 +14,12 @@ class LocalAuthRepository implements IAuthRepository {
   }) : _userStore = userStore ?? LocalUserStore(preferences);
 
   @override
+  bool get needsReauthenticationForSensitiveAction => true;
+
+  @override
+  bool get requiresPasswordForReauthentication => true;
+
+  @override
   Future<void> deleteAccount() async {
     await _userStore.clearSessionEmail();
     await _userStore.clearUser();
@@ -33,6 +39,23 @@ class LocalAuthRepository implements IAuthRepository {
     }
 
     return storedUser;
+  }
+
+  @override
+  Future<void> reauthenticate({String? password}) async {
+    final storedUser = _userStore.readUser();
+
+    if (storedUser == null) {
+      throw const AuthException('No account found to verify.');
+    }
+
+    if (password == null || password.isEmpty) {
+      throw const AuthException('Please enter your password.');
+    }
+
+    if (storedUser.password != password) {
+      throw const AuthException('Incorrect password. Please try again.');
+    }
   }
 
   @override

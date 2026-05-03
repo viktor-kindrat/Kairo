@@ -73,9 +73,10 @@ class DefaultFirebaseOptions {
     projectId: 'kairo-status-hub',
     databaseURL: 'https://kairo-status-hub-default-rtdb.firebaseio.com',
     storageBucket: 'kairo-status-hub.firebasestorage.app',
-    androidClientId: '498359023979-h6o5ae1cm1i5sfigi9t2bu71g4puu422.apps.googleusercontent.com',
-    iosClientId: '498359023979-2g092hiu9fq5rf6tt764m6ihkbse3rkc.apps.googleusercontent.com',
+    androidClientId:
+        '498359023979-h6o5ae1cm1i5sfigi9t2bu71g4puu422.apps.googleusercontent.com',
+    iosClientId:
+        '498359023979-2g092hiu9fq5rf6tt764m6ihkbse3rkc.apps.googleusercontent.com',
     iosBundleId: 'com.example.kairo',
   );
-
 }

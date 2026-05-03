@@ -4,8 +4,8 @@ import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
 import 'package:kairo/features/profile/widgets/profile_account_card.dart';
 import 'package:kairo/features/profile/widgets/profile_edit_button.dart';
-import 'package:kairo/features/profile/widgets/profile_general_section.dart';
 import 'package:kairo/features/profile/widgets/profile_hero.dart';
+import 'package:kairo/features/profile/widgets/slack_connection_card.dart';
 
 class ProfileContent extends StatelessWidget {
   final LocalUser user;
@@ -39,6 +39,10 @@ class ProfileContent extends StatelessWidget {
             ),
             SizedBox(height: context.sp(12)),
             ProfileHero(user: user, onAvatarTap: onAvatarTap),
+            SizedBox(height: context.sp(28)),
+            const _ProfileSectionTitle('INTEGRATIONS', fontSize: 18),
+            SizedBox(height: context.sp(14)),
+            const SlackConnectionCard(),
             SizedBox(height: context.sp(40)),
             _ProfileSectionTitle('ACCOUNT', fontSize: context.sp(18)),
             SizedBox(height: context.sp(18)),
@@ -47,10 +51,6 @@ class ProfileContent extends StatelessWidget {
               onEdit: onEditAccount,
               onChangePassword: onChangePassword,
             ),
-            SizedBox(height: context.sp(28)),
-            const _ProfileSectionTitle('GENERAL', fontSize: 18),
-            SizedBox(height: context.sp(14)),
-            const ProfileGeneralSection(),
             SizedBox(height: context.sp(28)),
             KairoButton(text: 'Log Out', onPressed: onLogOut),
             SizedBox(height: context.sp(12)),

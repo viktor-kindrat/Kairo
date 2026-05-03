@@ -17,6 +17,25 @@ class FirebaseAuthSession {
     required this.userStore,
   });
 
+  bool get needsReauthenticationForSensitiveAction {
+    final lastSignInTime = firebaseAuth.currentUser?.metadata.lastSignInTime;
+
+    if (lastSignInTime == null) {
+      return true;
+    }
+
+    return DateTime.now().difference(lastSignInTime) >
+        const Duration(minutes: 1);
+  }
+
+  bool get requiresPasswordForReauthentication {
+    final providerIds = firebaseAuth.currentUser?.providerData.map(
+      (provider) => provider.providerId,
+    );
+
+    return !(providerIds?.contains(GoogleAuthProvider.PROVIDER_ID) ?? false);
+  }
+
   Future<bool> checkEmailVerified() async {
     await ensureConnection();
 
@@ -79,6 +98,32 @@ class FirebaseAuthSession {
     }
 
     return persistAuthenticatedUser(firebaseUser);
+  }
+
+  Future<void> reauthenticateWithPassword(String? password) async {
+    await ensureConnection();
+
+    final currentUser = firebaseAuth.currentUser;
+    final email = currentUser?.email;
+
+    if (currentUser == null || email == null) {
+      throw const AuthException('Please sign in again to continue.');
+    }
+
+    if (password == null || password.isEmpty) {
+      throw const AuthException('Please enter your password.');
+    }
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+      await currentUser.reauthenticateWithCredential(credential);
+      await currentUser.getIdToken(true);
+    } on FirebaseAuthException catch (error) {
+      throw mapFirebaseAuthException(error);
+    }
   }
 
   LocalUser mapFirebaseUser(User user) {

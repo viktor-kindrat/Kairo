@@ -1,31 +1,34 @@
 import 'dart:convert';
 
-import 'package:kairo/features/home/utils/status_preset_icons.dart';
 import 'package:kairo/features/mqtt/constants/cube_side_config.dart';
 
 class CubeTelemetryEntry {
-  final String rawPayload;
-  final String? orientation;
-  final String? statusLabel;
-  final String? statusIconKey;
   final int? batteryPercent;
+  final DateTime? cubeTimestamp;
+  final String? cubeFace;
+  final String? orientation;
+  final String rawPayload;
+  final DateTime receivedAt;
+  final String? slackEmojiCode;
+  final String? statusId;
+  final String? statusLabel;
   final double? x;
   final double? y;
   final double? z;
-  final DateTime? cubeTimestamp;
-  final DateTime receivedAt;
 
   const CubeTelemetryEntry({
     required this.rawPayload,
     required this.receivedAt,
-    this.orientation,
-    this.statusLabel,
-    this.statusIconKey,
     this.batteryPercent,
+    this.cubeFace,
+    this.cubeTimestamp,
+    this.orientation,
+    this.slackEmojiCode,
+    this.statusId,
+    this.statusLabel,
     this.x,
     this.y,
     this.z,
-    this.cubeTimestamp,
   });
 
   factory CubeTelemetryEntry.fromPayload(String rawPayload) {
@@ -44,10 +47,7 @@ class CubeTelemetryEntry {
       return CubeTelemetryEntry(
         rawPayload: rawPayload,
         receivedAt: receivedAt,
-        orientation: decoded['orientation'] as String?,
-        statusLabel:
-            decoded['statusLabel'] as String? ?? decoded['status'] as String?,
-        statusIconKey: decoded['statusIconKey'] as String?,
+        orientation: _asString(decoded['orientation']),
         batteryPercent: _asInt(decoded['batteryPercent'] ?? decoded['battery']),
         x: _asDouble(decoded['x']),
         y: _asDouble(decoded['y']),
@@ -57,6 +57,28 @@ class CubeTelemetryEntry {
     } catch (_) {
       return CubeTelemetryEntry(rawPayload: rawPayload, receivedAt: receivedAt);
     }
+  }
+
+  CubeTelemetryEntry copyWith({
+    String? cubeFace,
+    String? slackEmojiCode,
+    String? statusId,
+    String? statusLabel,
+  }) {
+    return CubeTelemetryEntry(
+      batteryPercent: batteryPercent,
+      cubeFace: cubeFace ?? this.cubeFace,
+      cubeTimestamp: cubeTimestamp,
+      orientation: orientation,
+      rawPayload: rawPayload,
+      receivedAt: receivedAt,
+      slackEmojiCode: slackEmojiCode ?? this.slackEmojiCode,
+      statusId: statusId ?? this.statusId,
+      statusLabel: statusLabel ?? this.statusLabel,
+      x: x,
+      y: y,
+      z: z,
+    );
   }
 
   String get displayTimestamp {
@@ -76,11 +98,16 @@ class CubeTelemetryEntry {
       return statusLabel!;
     }
 
-    if (statusIconKey != null && statusIconKey!.trim().isNotEmpty) {
-      return labelForStatusKey(statusIconKey!);
+    return 'Not provided';
+  }
+
+  static String? _asString(Object? value) {
+    if (value is! String) {
+      return null;
     }
 
-    return 'Not provided';
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 
   static int? _asInt(Object? value) {

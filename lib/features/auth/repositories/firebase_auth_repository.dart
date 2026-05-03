@@ -37,6 +37,16 @@ class FirebaseAuthRepository implements IAuthRepository {
   }
 
   @override
+  bool get needsReauthenticationForSensitiveAction {
+    return _session.needsReauthenticationForSensitiveAction;
+  }
+
+  @override
+  bool get requiresPasswordForReauthentication {
+    return _session.requiresPasswordForReauthentication;
+  }
+
+  @override
   Future<bool> checkEmailVerified() {
     return _session.checkEmailVerified();
   }
@@ -49,6 +59,15 @@ class FirebaseAuthRepository implements IAuthRepository {
   @override
   Future<LocalUser?> getCurrentUser() {
     return _session.getCurrentUser();
+  }
+
+  @override
+  Future<void> reauthenticate({String? password}) {
+    if (_session.requiresPasswordForReauthentication) {
+      return _session.reauthenticateWithPassword(password);
+    }
+
+    return _googleClient.reauthenticate();
   }
 
   @override
