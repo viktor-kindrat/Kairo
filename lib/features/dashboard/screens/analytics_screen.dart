@@ -3,6 +3,7 @@ import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/features/dashboard/widgets/analytics_summary_card.dart';
 import 'package:kairo/features/dashboard/widgets/empty_telemetry_card.dart';
+import 'package:kairo/features/dashboard/widgets/realtime_database_analytics_card.dart';
 import 'package:kairo/features/dashboard/widgets/telemetry_history_card.dart';
 import 'package:kairo/features/mqtt/models/cube_telemetry_entry.dart';
 import 'package:kairo/features/mqtt/services/mqtt_service.dart';
@@ -78,6 +79,8 @@ class _AnalyticsContent extends StatelessWidget {
             connectionState: connectionState,
             latestEntry: latestEntry,
           ),
+          const SizedBox(height: 28),
+          RealtimeDatabaseAnalyticsCard(),
           const SizedBox(height: 28),
           Text(
             'Realtime History',

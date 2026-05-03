@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:kairo/features/mqtt/models/cube_telemetry_entry.dart';
+import 'package:kairo/features/mqtt/repositories/realtime_telemetry_repository.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
@@ -22,6 +23,8 @@ class MqttService {
   final ValueNotifier<MqttConnectionState> connectionState =
       ValueNotifier<MqttConnectionState>(MqttConnectionState.disconnected);
 
+  final RealtimeTelemetryRepository _telemetryRepository =
+      RealtimeTelemetryRepository();
   MqttServerClient? _client;
   StreamSubscription<List<MqttReceivedMessage<MqttMessage?>>?>? _updatesSub;
 
@@ -135,6 +138,7 @@ class MqttService {
         telemetryEntry,
         ...telemetryHistory.value,
       ].take(historyLimit).toList(growable: false);
+      unawaited(_telemetryRepository.recordEvent(telemetryEntry));
     });
   }
 }
