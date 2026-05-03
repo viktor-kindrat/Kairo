@@ -4,10 +4,9 @@ import 'package:kairo/core/models/local_user.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/widgets/app_form_sheet_layout.dart';
-import 'package:kairo/core/widgets/app_password_input.dart';
 import 'package:kairo/core/widgets/inline_form_error_text.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
-import 'package:kairo/core/widgets/password_pair_fields.dart';
+import 'package:kairo/features/profile/widgets/profile_password_fields.dart';
 
 class ProfilePasswordSettingsSheet extends StatefulWidget {
   final LocalUser user;
@@ -39,10 +38,12 @@ class _ProfilePasswordSettingsSheetState
   bool _isSaving = false;
 
   Future<void> _save() async {
-    final currentPasswordError = validateCurrentPassword(
-      currentPassword: widget.user.password,
-      enteredPassword: _currentPasswordController.text,
-    );
+    final currentPasswordError = _hasPassword
+        ? validateCurrentPassword(
+            currentPassword: widget.user.password,
+            enteredPassword: _currentPasswordController.text,
+          )
+        : null;
     final newPasswordError = validatePassword(_newPasswordController.text);
     final confirmPasswordError = validatePasswordConfirmation(
       password: _newPasswordController.text,
@@ -116,26 +117,20 @@ class _ProfilePasswordSettingsSheetState
   @override
   Widget build(BuildContext context) {
     return AppFormSheetLayout(
-      title: 'Change Password',
-      description:
-          'Confirm your current password, then choose a new secure one.',
+      title: _hasPassword ? 'Change Password' : 'Set Password',
+      description: _hasPassword
+          ? 'Confirm your current password, then choose a new secure one.'
+          : 'Create a secure password for your account.',
       children: [
-        AppPasswordInput(
-          controller: _currentPasswordController,
-          hintText: 'Current Password',
-          errorText: _currentPasswordError,
-          onChanged: (_) => _clearErrors(),
-        ),
-        SizedBox(height: context.sp(16)),
-        PasswordPairFields(
-          passwordController: _newPasswordController,
+        ProfilePasswordFields(
           confirmPasswordController: _confirmPasswordController,
-          passwordHintText: 'New Password',
-          confirmPasswordHintText: 'Confirm New Password',
-          passwordError: _newPasswordError,
+          currentPasswordController: _currentPasswordController,
+          currentPasswordError: _currentPasswordError,
           confirmPasswordError: _confirmPasswordError,
-          onPasswordChanged: (_) => _clearErrors(),
-          onConfirmPasswordChanged: (_) => _clearErrors(),
+          newPasswordController: _newPasswordController,
+          newPasswordError: _newPasswordError,
+          onChanged: (_) => _clearErrors(),
+          showCurrentPassword: _hasPassword,
         ),
         if (_formError != null) ...[
           SizedBox(height: context.sp(16)),
@@ -143,11 +138,15 @@ class _ProfilePasswordSettingsSheetState
         ],
         SizedBox(height: context.sp(24)),
         KairoButton(
-          text: _isSaving ? 'Updating...' : 'Update Password',
+          text: _isSaving
+              ? (_hasPassword ? 'Updating...' : 'Saving...')
+              : (_hasPassword ? 'Update Password' : 'Save Password'),
           isLoading: _isSaving,
           onPressed: _save,
         ),
       ],
     );
   }
+
+  bool get _hasPassword => widget.user.password.trim().isNotEmpty;
 }

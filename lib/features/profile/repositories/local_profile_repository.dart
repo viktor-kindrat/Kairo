@@ -44,8 +44,7 @@ class LocalProfileRepository implements IProfileRepository {
       password: password,
       roleTitle: roleTitle.trim(),
     );
-    final emailChanged =
-        normalizeEmail(currentUser.email) != normalizedEmail;
+    final emailChanged = normalizeEmail(currentUser.email) != normalizedEmail;
 
     try {
       if (updatedUser.fullName != (firebaseUser.displayName ?? '')) {
@@ -74,7 +73,7 @@ class LocalProfileRepository implements IProfileRepository {
   }
 
   @override
-  Future<LocalUser> updateAvatar(String? avatarPath) async {
+  Future<LocalUser> updateAvatar(String? avatarUrl) async {
     final currentUser = await getProfile();
 
     if (currentUser == null) {
@@ -82,8 +81,8 @@ class LocalProfileRepository implements IProfileRepository {
     }
 
     final updatedUser = currentUser.copyWith(
-      avatarPath: avatarPath,
-      clearAvatarPath: avatarPath == null,
+      avatarUrl: avatarUrl,
+      clearAvatarUrl: avatarUrl == null,
     );
 
     await _userStore.writeUser(updatedUser);

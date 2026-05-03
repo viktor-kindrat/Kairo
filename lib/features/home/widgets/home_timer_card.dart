@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
+import 'package:kairo/core/utils/slack_emoji.dart';
+import 'package:kairo/features/home/models/home_activity_status.dart';
+import 'package:kairo/features/home/utils/duration_formatters.dart';
 
 class HomeTimerCard extends StatelessWidget {
-  const HomeTimerCard({super.key});
+  final HomeActivitySnapshot activity;
+
+  const HomeTimerCard({required this.activity, super.key});
 
   @override
   Widget build(BuildContext context) {
+    final currentPreset = activity.currentPreset;
+    final statusLabel = _statusLabel();
+    final timerLabel = activity.isLoading
+        ? '--:--:--'
+        : formatTimerDuration(activity.currentElapsed);
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(context.sp(32)),
@@ -32,11 +43,17 @@ class HomeTimerCard extends StatelessWidget {
                 colors: [Color(0xFF8B66FF), Color(0xFF6B4EFF)],
               ),
             ),
-            child: const Icon(Icons.bolt, color: Colors.white, size: 40),
+            child: Center(
+              child: Text(
+                slackEmojiGlyph(currentPreset?.slackEmojiCode),
+                style: TextStyle(fontSize: context.sp(36)),
+              ),
+            ),
           ),
           SizedBox(height: context.sp(24)),
           Text(
-            'Deep Work',
+            statusLabel,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: context.sp(24),
               fontWeight: FontWeight.w800,
@@ -44,7 +61,7 @@ class HomeTimerCard extends StatelessWidget {
           ),
           SizedBox(height: context.sp(8)),
           Text(
-            '01:24:10',
+            timerLabel,
             style: TextStyle(
               fontSize: context.sp(48),
               fontWeight: FontWeight.w300,
@@ -54,5 +71,21 @@ class HomeTimerCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _statusLabel() {
+    if (activity.requiresSignIn) {
+      return 'Sign in to track focus';
+    }
+
+    if (activity.currentPreset != null) {
+      return activity.currentPreset!.label;
+    }
+
+    if (activity.hasActivityEvents) {
+      return activity.isLoading ? 'Loading statuses' : 'Status not configured';
+    }
+
+    return activity.isLoading ? 'Loading status' : 'Waiting for cube';
   }
 }
