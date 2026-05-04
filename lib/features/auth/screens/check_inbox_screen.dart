@@ -34,10 +34,8 @@ class CheckInboxScreen extends StatelessWidget {
                   ),
                   KairoButton(
                     text: 'Back to Log In',
-                    onPressed: () => Navigator.popUntil(
-                      context,
-                      (route) => route.isFirst,
-                    ),
+                    onPressed: () =>
+                        Navigator.popUntil(context, (route) => route.isFirst),
                   ),
                 ],
               ),

@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/models/local_user.dart';
-import 'package:kairo/core/models/profile_update_result.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
-import 'package:kairo/core/widgets/app_email_input.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/app_form_sheet_layout.dart';
-import 'package:kairo/core/widgets/inline_form_error_text.dart';
 import 'package:kairo/core/widgets/kairo_button.dart';
-import 'package:kairo/core/widgets/kairo_input.dart';
+import 'package:kairo/features/profile/models/profile_account_save.dart';
+import 'package:kairo/features/profile/utils/profile_account_field_errors.dart';
+import 'package:kairo/features/profile/utils/profile_email_change_dialog.dart';
+import 'package:kairo/features/profile/widgets/profile_account_settings_fields.dart';
 
 class ProfileAccountSettingsSheet extends StatefulWidget {
   final LocalUser user;
-  final Future<ProfileUpdateResult> Function({
-    required String fullName,
-    required String email,
-    required String roleTitle,
-  })
-  onSave;
+  final ProfileAccountSave onSave;
 
   const ProfileAccountSettingsSheet({
     required this.user,
@@ -39,7 +35,6 @@ class _ProfileAccountSettingsSheetState
   String? _fullNameError;
   String? _emailError;
   String? _roleTitleError;
-  String? _formError;
   bool _isSaving = false;
 
   @override
@@ -51,22 +46,19 @@ class _ProfileAccountSettingsSheetState
   }
 
   Future<void> _save() async {
-    final fullNameError = validateFullName(_fullNameController.text);
-    final emailError = validateEmail(_emailController.text);
-    final roleTitleError = validateRoleTitle(_roleTitleController.text);
+    final errors = validateProfileAccountFields(
+      email: _emailController.text,
+      fullName: _fullNameController.text,
+      roleTitle: _roleTitleController.text,
+    );
 
     setState(() {
-      _fullNameError = fullNameError;
-      _emailError = emailError;
-      _roleTitleError = roleTitleError;
-      _formError = null;
+      _fullNameError = errors.fullName;
+      _emailError = errors.email;
+      _roleTitleError = errors.roleTitle;
     });
 
-    if ([
-      fullNameError,
-      emailError,
-      roleTitleError,
-    ].any((error) => error != null)) {
+    if (errors.hasErrors) {
       return;
     }
 
@@ -74,30 +66,9 @@ class _ProfileAccountSettingsSheetState
     final normalizedNextEmail = normalizeEmail(_emailController.text);
 
     if (normalizedCurrentEmail != normalizedNextEmail) {
-      final shouldContinue = await showDialog<bool>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Confirm new email'),
-            content: const Text(
-              'Changing your email will send a confirmation link to the new '
-              'address and you will need to sign in again after confirming it.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Continue'),
-              ),
-            ],
-          );
-        },
-      );
+      final shouldContinue = await confirmProfileEmailChange(context);
 
-      if (shouldContinue != true) {
+      if (!shouldContinue) {
         return;
       }
     }
@@ -119,9 +90,11 @@ class _ProfileAccountSettingsSheetState
 
       Navigator.pop(context, result);
     } on AuthException catch (error) {
-      setState(() {
-        _formError = error.message;
-      });
+      if (!mounted) {
+        return;
+      }
+
+      context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
         setState(() {
@@ -132,18 +105,10 @@ class _ProfileAccountSettingsSheetState
   }
 
   void _clearErrors() {
-    if (_fullNameError == null &&
-        _emailError == null &&
-        _roleTitleError == null &&
-        _formError == null) {
-      return;
-    }
-
     setState(() {
       _fullNameError = null;
       _emailError = null;
       _roleTitleError = null;
-      _formError = null;
     });
   }
 
@@ -161,30 +126,15 @@ class _ProfileAccountSettingsSheetState
       title: 'Account Settings',
       description: 'Update your personal details, email, and role.',
       children: [
-        KairoInput(
-          controller: _fullNameController,
-          hintText: 'Full Name',
-          keyboardType: TextInputType.name,
-          errorText: _fullNameError,
+        ProfileAccountSettingsFields(
+          emailController: _emailController,
+          emailError: _emailError,
+          fullNameController: _fullNameController,
+          fullNameError: _fullNameError,
           onChanged: (_) => _clearErrors(),
+          roleTitleController: _roleTitleController,
+          roleTitleError: _roleTitleError,
         ),
-        SizedBox(height: context.sp(16)),
-        AppEmailInput(
-          controller: _emailController,
-          errorText: _emailError,
-          onChanged: (_) => _clearErrors(),
-        ),
-        SizedBox(height: context.sp(16)),
-        KairoInput(
-          controller: _roleTitleController,
-          hintText: 'Role Title',
-          errorText: _roleTitleError,
-          onChanged: (_) => _clearErrors(),
-        ),
-        if (_formError != null) ...[
-          SizedBox(height: context.sp(16)),
-          InlineFormErrorText(message: _formError!),
-        ],
         SizedBox(height: context.sp(24)),
         KairoButton(
           text: _isSaving ? 'Saving...' : 'Save Changes',

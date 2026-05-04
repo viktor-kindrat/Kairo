@@ -52,6 +52,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '498359023979',
     projectId: 'kairo-status-hub',
     authDomain: 'kairo-status-hub.firebaseapp.com',
+    databaseURL: 'https://kairo-status-hub-default-rtdb.firebaseio.com',
     storageBucket: 'kairo-status-hub.firebasestorage.app',
     measurementId: 'G-F6KTFJGXF2',
   );
@@ -61,6 +62,7 @@ class DefaultFirebaseOptions {
     appId: '1:498359023979:android:dd000d8ccad0638ae3342e',
     messagingSenderId: '498359023979',
     projectId: 'kairo-status-hub',
+    databaseURL: 'https://kairo-status-hub-default-rtdb.firebaseio.com',
     storageBucket: 'kairo-status-hub.firebasestorage.app',
   );
 
@@ -69,9 +71,12 @@ class DefaultFirebaseOptions {
     appId: '1:498359023979:ios:eca8836e8c07547ae3342e',
     messagingSenderId: '498359023979',
     projectId: 'kairo-status-hub',
+    databaseURL: 'https://kairo-status-hub-default-rtdb.firebaseio.com',
     storageBucket: 'kairo-status-hub.firebasestorage.app',
-    androidClientId: '498359023979-h6o5ae1cm1i5sfigi9t2bu71g4puu422.apps.googleusercontent.com',
-    iosClientId: '498359023979-2g092hiu9fq5rf6tt764m6ihkbse3rkc.apps.googleusercontent.com',
+    androidClientId:
+        '498359023979-h6o5ae1cm1i5sfigi9t2bu71g4puu422.apps.googleusercontent.com',
+    iosClientId:
+        '498359023979-2g092hiu9fq5rf6tt764m6ihkbse3rkc.apps.googleusercontent.com',
     iosBundleId: 'com.example.kairo',
   );
 }

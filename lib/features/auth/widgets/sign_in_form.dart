@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/app_routes.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
-import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/email_password_fields.dart';
+import 'package:kairo/features/auth/cubit/auth_cubit.dart';
+import 'package:kairo/features/auth/utils/auth_google_submitter.dart';
 import 'package:kairo/features/auth/widgets/auth_action_section.dart';
+import 'package:kairo/features/auth/widgets/forgot_password_link.dart';
 
 class SignInForm extends StatefulWidget {
   final VoidCallback onSwitchTab;
@@ -24,7 +25,6 @@ class _SignInFormState extends State<SignInForm> {
 
   String? _emailError;
   String? _passwordError;
-  String? _formError;
   bool _isLoading = false;
   bool _isGoogleLoading = false;
 
@@ -35,7 +35,6 @@ class _SignInFormState extends State<SignInForm> {
     setState(() {
       _emailError = emailError;
       _passwordError = passwordError;
-      _formError = null;
     });
 
     if (emailError != null || passwordError != null) {
@@ -47,7 +46,7 @@ class _SignInFormState extends State<SignInForm> {
     });
 
     try {
-      await context.auth.signIn(
+      await context.read<AuthCubit>().signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
@@ -56,9 +55,6 @@ class _SignInFormState extends State<SignInForm> {
         return;
       }
 
-      setState(() {
-        _formError = null;
-      });
       context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
@@ -70,41 +66,22 @@ class _SignInFormState extends State<SignInForm> {
   }
 
   Future<void> _submitGoogleSignIn() async {
-    if (_isLoading || _isGoogleLoading) {
-      return;
-    }
-
-    setState(() {
-      _formError = null;
-      _isGoogleLoading = true;
-    });
-
-    try {
-      await context.auth.signInWithGoogle();
-    } on AuthException catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      context.showErrorSnackBar(error.message);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isGoogleLoading = false;
-        });
-      }
-    }
+    await submitGoogleSignIn(
+      context: context,
+      isBusy: () => _isLoading || _isGoogleLoading,
+      onStart: () => setState(() => _isGoogleLoading = true),
+      onComplete: () => setState(() => _isGoogleLoading = false),
+    );
   }
 
   void _clearErrorState() {
-    if (_emailError == null && _passwordError == null && _formError == null) {
+    if (_emailError == null && _passwordError == null) {
       return;
     }
 
     setState(() {
       _emailError = null;
       _passwordError = null;
-      _formError = null;
     });
   }
 
@@ -129,22 +106,7 @@ class _SignInFormState extends State<SignInForm> {
           onPasswordChanged: (_) => _clearErrorState(),
         ),
         SizedBox(height: context.sp(16)),
-        Align(
-          alignment: Alignment.centerRight,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.forgotPassword);
-            },
-            child: Text(
-              'Forgot Password?',
-              style: TextStyle(
-                fontSize: context.sp(14),
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-        ),
+        const ForgotPasswordLink(),
         SizedBox(height: context.sp(24)),
         AuthActionSection(
           primaryButtonText: _isLoading ? 'Logging In...' : 'Log In',
@@ -154,7 +116,6 @@ class _SignInFormState extends State<SignInForm> {
           secondaryButtonText: _isGoogleLoading
               ? 'Connecting Google...'
               : 'Continue with Google',
-          formError: _formError,
           footerMessage: 'New to Kairo?',
           footerActionText: 'Sign Up',
           onFooterTap: widget.onSwitchTab,
