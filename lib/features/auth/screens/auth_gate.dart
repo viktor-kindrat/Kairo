@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/features/auth/cubit/auth_cubit.dart';
+import 'package:kairo/features/auth/cubit/auth_state.dart';
 import 'package:kairo/features/auth/screens/auth_screen.dart';
 import 'package:kairo/features/auth/screens/verify_email_screen.dart';
 import 'package:kairo/features/main/main_screen.dart';
@@ -18,28 +20,32 @@ class _AuthGateState extends State<AuthGate> {
   Future<void>? _syncFuture;
 
   Future<void> _ensureSyncedUser(User user) {
-    final authController = context.auth;
+    final cubit = context.read<AuthCubit>();
     final email = user.email;
 
     if (email == null) {
       _syncedEmail = null;
-      authController.clearCurrentUser(notify: false);
+      cubit.clearCurrentUser();
       return Future.value();
     }
 
-    if (_syncedEmail == email && authController.currentUser?.email == email) {
+    final currentState = cubit.state;
+    final alreadySynced = currentState is AuthAuthenticated &&
+        currentState.user.email == email;
+
+    if (_syncedEmail == email && alreadySynced) {
       return _syncFuture ?? Future.value();
     }
 
     _syncedEmail = email;
-    _syncFuture = authController.refreshCurrentUser();
+    _syncFuture = cubit.refreshCurrentUser();
     return _syncFuture!;
   }
 
   void _clearSyncedUser() {
     _syncedEmail = null;
     _syncFuture = null;
-    context.auth.clearCurrentUser(notify: false);
+    context.read<AuthCubit>().clearCurrentUser();
   }
 
   @override
@@ -69,7 +75,7 @@ class _AuthGateState extends State<AuthGate> {
           future: syncFuture,
           builder: (context, syncSnapshot) {
             if (syncSnapshot.connectionState == ConnectionState.waiting &&
-                context.auth.currentUser == null) {
+                context.read<AuthCubit>().state is! AuthAuthenticated) {
               return const _AuthGateLoader();
             }
 

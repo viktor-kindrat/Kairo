@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
-import 'package:kairo/core/contexts/status_context.dart';
 import 'package:kairo/core/models/local_user.dart';
 import 'package:kairo/core/models/profile_update_result.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
+import 'package:kairo/features/auth/cubit/auth_cubit.dart';
+import 'package:kairo/features/auth/cubit/auth_state.dart';
+import 'package:kairo/features/profile/cubit/slack_cubit.dart';
+import 'package:kairo/features/profile/repositories/slack_connection_repository.dart';
 import 'package:kairo/features/profile/utils/delete_account_flow.dart';
 import 'package:kairo/features/profile/utils/profile_avatar_actions.dart';
 import 'package:kairo/features/profile/widgets/background_glow.dart';
@@ -14,120 +17,33 @@ import 'package:kairo/features/profile/widgets/profile_account_settings_sheet.da
 import 'package:kairo/features/profile/widgets/profile_content.dart';
 import 'package:kairo/features/profile/widgets/profile_password_settings_sheet.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (ctx) => SlackCubit(ctx.read<SlackConnectionRepository>())
+        ..loadStatus(),
+      child: BlocBuilder<AuthCubit, AuthState>(
+        builder: (context, authState) {
+          if (authState is! AuthAuthenticated) {
+            return const NoProfileView();
+          }
+          return _ProfileBody(user: authState.user);
+        },
+      ),
+    );
+  }
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  final ImagePicker _imagePicker = ImagePicker();
-  bool _isAvatarBusy = false;
+class _ProfileBody extends StatelessWidget {
+  final LocalUser user;
 
-  Future<void> _openAccountSettings(LocalUser user) async {
-    final authController = context.auth;
-    final updateResult = await showModalBottomSheet<ProfileUpdateResult>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      builder: (sheetContext) {
-        return ProfileAccountSettingsSheet(
-          user: user,
-          onSave:
-              ({required fullName, required email, required roleTitle}) async {
-                return authController.updateProfile(
-                  fullName: fullName,
-                  email: email,
-                  roleTitle: roleTitle,
-                  password: user.password,
-                );
-              },
-        );
-      },
-    );
-
-    if (updateResult == null || !mounted) {
-      return;
-    }
-
-    if (updateResult.requiresEmailReconfirmation) {
-      context.showSuccessSnackBar(
-        'Confirm your new email address, then sign in again to continue.',
-      );
-      return;
-    }
-
-    context.showSuccessSnackBar('Account details updated successfully.');
-  }
-
-  Future<void> _openPasswordSettings(LocalUser user) async {
-    final authController = context.auth;
-    final didSave = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      builder: (sheetContext) {
-        return ProfilePasswordSettingsSheet(
-          user: user,
-          onSave: (password) async {
-            await authController.updateProfile(
-              fullName: user.fullName,
-              email: user.email,
-              roleTitle: user.roleTitle,
-              password: password,
-            );
-          },
-        );
-      },
-    );
-
-    if (didSave != true || !mounted) {
-      return;
-    }
-
-    context.showSuccessSnackBar('Password updated successfully.');
-  }
-
-  Future<void> _logOut() => context.auth.signOut();
-
-  Future<void> _deleteAccount() async {
-    await deleteProfileAccount(
-      context: context,
-      authController: context.auth,
-      statusController: context.statuses,
-    );
-  }
-
-  Future<void> _showAvatarActions(LocalUser user) async {
-    if (_isAvatarBusy) {
-      return;
-    }
-
-    await showProfileAvatarActions(
-      context: context,
-      imagePicker: _imagePicker,
-      onBusyChanged: _setAvatarBusy,
-      user: user,
-    );
-  }
-
-  void _setAvatarBusy(bool isBusy) {
-    if (!mounted || _isAvatarBusy == isBusy) {
-      return;
-    }
-
-    setState(() => _isAvatarBusy = isBusy);
-  }
+  const _ProfileBody({required this.user});
 
   @override
   Widget build(BuildContext context) {
-    final user = context.auth.currentUser;
-
-    if (user == null) {
-      return const NoProfileView();
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FF),
       body: Stack(
@@ -144,40 +60,125 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           ProfileContent(
             user: user,
-            onAvatarTap: () => _showAvatarActions(user),
-            onChangePassword: () => _openPasswordSettings(user),
-            onDeleteAccount: _deleteAccount,
-            onEditAccount: () => _openAccountSettings(user),
-            onLogOut: _logOut,
+            onAvatarTap: () => _AvatarManager.show(context, user),
+            onChangePassword: () => _openPasswordSettings(context, user),
+            onDeleteAccount: () => _deleteAccount(context),
+            onEditAccount: () => _openAccountSettings(context, user),
+            onLogOut: () => context.read<AuthCubit>().signOut(),
           ),
-          if (_isAvatarBusy) const _AvatarBusyOverlay(),
         ],
       ),
     );
   }
+
+  Future<void> _openAccountSettings(
+    BuildContext context,
+    LocalUser user,
+  ) async {
+    final authCubit = context.read<AuthCubit>();
+    final updateResult = await showModalBottomSheet<ProfileUpdateResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (_) => ProfileAccountSettingsSheet(
+        user: user,
+        onSave: ({
+          required fullName,
+          required email,
+          required roleTitle,
+        }) =>
+            authCubit.updateProfile(
+          fullName: fullName,
+          email: email,
+          roleTitle: roleTitle,
+          password: user.password,
+        ),
+      ),
+    );
+
+    if (updateResult == null || !context.mounted) return;
+
+    if (updateResult.requiresEmailReconfirmation) {
+      context.showSuccessSnackBar(
+        'Confirm your new email address, then sign in again to continue.',
+      );
+      return;
+    }
+
+    context.showSuccessSnackBar('Account details updated successfully.');
+  }
+
+  Future<void> _openPasswordSettings(
+    BuildContext context,
+    LocalUser user,
+  ) async {
+    final authCubit = context.read<AuthCubit>();
+    final didSave = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (_) => ProfilePasswordSettingsSheet(
+        user: user,
+        onSave: (password) => authCubit.updateProfile(
+          fullName: user.fullName,
+          email: user.email,
+          roleTitle: user.roleTitle,
+          password: password,
+        ),
+      ),
+    );
+
+    if (didSave != true || !context.mounted) return;
+    context.showSuccessSnackBar('Password updated successfully.');
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    await deleteProfileAccount(context: context);
+  }
 }
 
-class _AvatarBusyOverlay extends StatelessWidget {
-  const _AvatarBusyOverlay();
+class _AvatarManager extends StatefulWidget {
+  final LocalUser user;
+
+  const _AvatarManager({required this.user});
+
+  static Future<void> show(BuildContext context, LocalUser user) async {
+    await showProfileAvatarActions(
+      context: context,
+      imagePicker: ImagePicker(),
+      onBusyChanged: (_) {},
+      user: user,
+    );
+  }
+
+  @override
+  State<_AvatarManager> createState() => _AvatarManagerState();
+}
+
+class _AvatarManagerState extends State<_AvatarManager> {
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _isAvatarBusy = false;
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          const ModalBarrier(color: Colors.black26, dismissible: false),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const CircularProgressIndicator(),
-            ),
-          ),
-        ],
-      ),
+    return GestureDetector(
+      onTap: _isAvatarBusy ? null : () => _showAvatarActions(context),
+      child: widget.user.avatarUrl != null
+          ? CircleAvatar(
+              backgroundImage: NetworkImage(widget.user.avatarUrl!),
+            )
+          : const CircleAvatar(child: Icon(Icons.person)),
+    );
+  }
+
+  Future<void> _showAvatarActions(BuildContext context) async {
+    await showProfileAvatarActions(
+      context: context,
+      imagePicker: _imagePicker,
+      onBusyChanged: (busy) {
+        if (mounted) setState(() => _isAvatarBusy = busy);
+      },
+      user: widget.user,
     );
   }
 }

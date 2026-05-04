@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/email_password_fields.dart';
+import 'package:kairo/features/auth/cubit/auth_cubit.dart';
 import 'package:kairo/features/auth/utils/auth_google_submitter.dart';
 import 'package:kairo/features/auth/widgets/auth_action_section.dart';
 import 'package:kairo/features/auth/widgets/forgot_password_link.dart';
@@ -45,7 +46,7 @@ class _SignInFormState extends State<SignInForm> {
     });
 
     try {
-      await context.auth.signIn(
+      await context.read<AuthCubit>().signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );

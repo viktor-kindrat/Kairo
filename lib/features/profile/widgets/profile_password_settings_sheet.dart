@@ -91,13 +91,6 @@ class _ProfilePasswordSettingsSheetState
   }
 
   void _clearErrors() {
-    if (_currentPasswordError == null &&
-        _newPasswordError == null &&
-        _confirmPasswordError == null &&
-        _formError == null) {
-      return;
-    }
-
     setState(() {
       _currentPasswordError = null;
       _newPasswordError = null;

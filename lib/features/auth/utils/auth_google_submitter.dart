@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
+import 'package:kairo/features/auth/cubit/auth_cubit.dart';
 
 Future<void> submitGoogleSignIn({
   required BuildContext context,
@@ -16,7 +17,7 @@ Future<void> submitGoogleSignIn({
   onStart();
 
   try {
-    await context.auth.signInWithGoogle();
+    await context.read<AuthCubit>().signInWithGoogle();
   } on AuthException catch (error) {
     if (!context.mounted) {
       return;
