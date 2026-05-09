@@ -72,6 +72,7 @@ class _AuthGateState extends State<AuthGate> {
     _syncedEmail = null;
     _syncFuture = null;
     context.read<AuthCubit>().clearCurrentUser();
+    unawaited(context.read<StatusPresetCubit>().clear());
     MqttService.instance.disconnect();
   }
 
