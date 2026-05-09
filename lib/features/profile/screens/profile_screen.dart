@@ -6,8 +6,6 @@ import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/features/auth/cubit/auth_cubit.dart';
 import 'package:kairo/features/auth/cubit/auth_state.dart';
-import 'package:kairo/features/profile/cubit/slack_cubit.dart';
-import 'package:kairo/features/profile/repositories/slack_connection_repository.dart';
 import 'package:kairo/features/profile/utils/delete_account_flow.dart';
 import 'package:kairo/features/profile/widgets/background_glow.dart';
 import 'package:kairo/features/profile/widgets/no_profile_view.dart';
@@ -21,17 +19,13 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (ctx) => SlackCubit(ctx.read<SlackConnectionRepository>())
-        ..loadStatus(),
-      child: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, authState) {
-          if (authState is! AuthAuthenticated) {
-            return const NoProfileView();
-          }
-          return _ProfileBody(user: authState.user);
-        },
-      ),
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        if (authState is! AuthAuthenticated) {
+          return const NoProfileView();
+        }
+        return _ProfileBody(user: authState.user);
+      },
     );
   }
 }

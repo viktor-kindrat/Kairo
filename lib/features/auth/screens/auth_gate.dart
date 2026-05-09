@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,7 +8,10 @@ import 'package:kairo/features/auth/cubit/auth_cubit.dart';
 import 'package:kairo/features/auth/cubit/auth_state.dart';
 import 'package:kairo/features/auth/screens/auth_screen.dart';
 import 'package:kairo/features/auth/screens/verify_email_screen.dart';
+import 'package:kairo/features/home/cubit/status_preset_cubit.dart';
+import 'package:kairo/features/home/cubit/status_preset_state.dart';
 import 'package:kairo/features/main/main_screen.dart';
+import 'package:kairo/features/mqtt/services/mqtt_service.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -20,16 +25,17 @@ class _AuthGateState extends State<AuthGate> {
   Future<void>? _syncFuture;
 
   Future<void> _ensureSyncedUser(User user) {
-    final cubit = context.read<AuthCubit>();
+    final authCubit = context.read<AuthCubit>();
+    final statusCubit = context.read<StatusPresetCubit>();
     final email = user.email;
 
     if (email == null) {
       _syncedEmail = null;
-      cubit.clearCurrentUser();
+      authCubit.clearCurrentUser();
       return Future.value();
     }
 
-    final currentState = cubit.state;
+    final currentState = authCubit.state;
     final alreadySynced = currentState is AuthAuthenticated &&
         currentState.user.email == email;
 
@@ -38,14 +44,35 @@ class _AuthGateState extends State<AuthGate> {
     }
 
     _syncedEmail = email;
-    _syncFuture = cubit.refreshCurrentUser();
+    _syncFuture = _syncAndConnect(authCubit, statusCubit, user);
     return _syncFuture!;
+  }
+
+  Future<void> _syncAndConnect(
+    AuthCubit authCubit,
+    StatusPresetCubit statusCubit,
+    User user,
+  ) async {
+    await authCubit.refreshCurrentUser();
+    if (!mounted) return;
+
+    final uid = user.uid;
+    unawaited(
+      MqttService.instance.connect().then((_) {
+        MqttService.instance.subscribe(MqttService.topicForUser(uid));
+      }).catchError((_) {}),
+    );
+
+    if (statusCubit.state is StatusPresetInitial) {
+      unawaited(statusCubit.loadOrSeedDefaults());
+    }
   }
 
   void _clearSyncedUser() {
     _syncedEmail = null;
     _syncFuture = null;
     context.read<AuthCubit>().clearCurrentUser();
+    MqttService.instance.disconnect();
   }
 
   @override
@@ -66,7 +93,7 @@ class _AuthGateState extends State<AuthGate> {
 
         if (!firebaseUser.emailVerified) {
           _clearSyncedUser();
-          return const VerifyEmailScreen();
+          return VerifyEmailScreen(email: firebaseUser.email ?? '');
         }
 
         final syncFuture = _ensureSyncedUser(firebaseUser);

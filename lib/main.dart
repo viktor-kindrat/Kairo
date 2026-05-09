@@ -11,9 +11,9 @@ import 'package:kairo/features/auth/repositories/firebase_auth_repository.dart';
 import 'package:kairo/features/auth/screens/auth_gate.dart';
 import 'package:kairo/features/auth/screens/auth_screen.dart';
 import 'package:kairo/features/auth/screens/forgot_password_screen.dart';
-import 'package:kairo/features/auth/screens/verify_email_screen.dart';
 import 'package:kairo/features/home/cubit/status_preset_cubit.dart';
 import 'package:kairo/features/home/repositories/firestore_status_preset_repository.dart';
+import 'package:kairo/features/home/repositories/home_activity_repository.dart';
 import 'package:kairo/features/home/repositories/local_status_preset_repository.dart';
 import 'package:kairo/features/main/cubit/navigation_cubit.dart';
 import 'package:kairo/features/main/main_screen.dart';
@@ -37,6 +37,7 @@ Future<void> main() async {
     localRepository: localStatusRepository,
   );
   final slackRepository = SlackConnectionRepository();
+  final homeActivityRepository = HomeActivityRepository();
   final telemetryHistoryRepository = RealtimeTelemetryHistoryRepository();
   final accountDeletionRepository = AccountDeletionRepository();
 
@@ -46,6 +47,7 @@ Future<void> main() async {
       profileRepository: profileRepository,
       statusRepository: statusRepository,
       slackRepository: slackRepository,
+      homeActivityRepository: homeActivityRepository,
       telemetryHistoryRepository: telemetryHistoryRepository,
       accountDeletionRepository: accountDeletionRepository,
     ),
@@ -57,6 +59,7 @@ class KairoApp extends StatelessWidget {
   final FirestoreProfileRepository profileRepository;
   final FirestoreStatusPresetRepository statusRepository;
   final SlackConnectionRepository slackRepository;
+  final HomeActivityRepository homeActivityRepository;
   final RealtimeTelemetryHistoryRepository telemetryHistoryRepository;
   final AccountDeletionRepository accountDeletionRepository;
 
@@ -65,6 +68,7 @@ class KairoApp extends StatelessWidget {
     required this.profileRepository,
     required this.statusRepository,
     required this.slackRepository,
+    required this.homeActivityRepository,
     required this.telemetryHistoryRepository,
     required this.accountDeletionRepository,
     super.key,
@@ -75,6 +79,7 @@ class KairoApp extends StatelessWidget {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: slackRepository),
+        RepositoryProvider.value(value: homeActivityRepository),
         RepositoryProvider.value(value: telemetryHistoryRepository),
         RepositoryProvider.value(value: accountDeletionRepository),
       ],
@@ -109,7 +114,6 @@ class KairoApp extends StatelessWidget {
             AppRoutes.auth: (context) => const AuthScreen(),
             AppRoutes.forgotPassword: (context) =>
                 const ForgotPasswordScreen(),
-            AppRoutes.verifyEmail: (context) => const VerifyEmailScreen(),
             AppRoutes.main: (context) => const MainScreen(),
           },
         ),

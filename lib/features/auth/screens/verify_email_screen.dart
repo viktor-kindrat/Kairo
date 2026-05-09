@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kairo/core/constants.dart';
@@ -7,11 +6,12 @@ import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/resend_countdown_controller.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/features/auth/cubit/auth_cubit.dart';
-import 'package:kairo/features/auth/cubit/auth_state.dart';
 import 'package:kairo/features/auth/widgets/verify_email_content.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({super.key});
+  final String email;
+
+  const VerifyEmailScreen({required this.email, super.key});
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -86,11 +86,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
-    final pendingEmail = FirebaseAuth.instance.currentUser?.email ??
-        (authState is AuthAuthenticated ? authState.user.email : null) ??
-        'your email address';
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -100,7 +95,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           onBackPressed: _signOutToAuth,
           onConfirmPressed: _confirmEmailVerified,
           onResendPressed: _resendCode,
-          pendingEmail: pendingEmail,
+          pendingEmail: widget.email.isNotEmpty
+              ? widget.email
+              : 'your email address',
           resendCountdown: _countdownController,
         ),
       ),
