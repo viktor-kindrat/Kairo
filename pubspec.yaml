@@ -52,7 +52,7 @@ dependencies:
   flutter_bloc: ^8.1.6
   kairo_torch_plugin:
     git:
-      url: https://github.com/ViktorKindrat/kairo_torch_plugin.git
+      url: https://github.com/viktor-kindrat/kairo_torch_plugin.git
       ref: main
 
 dev_dependencies:
