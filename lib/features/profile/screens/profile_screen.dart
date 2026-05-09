@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:kairo/core/models/local_user.dart';
 import 'package:kairo/core/models/profile_update_result.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
@@ -10,10 +9,10 @@ import 'package:kairo/features/auth/cubit/auth_state.dart';
 import 'package:kairo/features/profile/cubit/slack_cubit.dart';
 import 'package:kairo/features/profile/repositories/slack_connection_repository.dart';
 import 'package:kairo/features/profile/utils/delete_account_flow.dart';
-import 'package:kairo/features/profile/utils/profile_avatar_actions.dart';
 import 'package:kairo/features/profile/widgets/background_glow.dart';
 import 'package:kairo/features/profile/widgets/no_profile_view.dart';
 import 'package:kairo/features/profile/widgets/profile_account_settings_sheet.dart';
+import 'package:kairo/features/profile/widgets/profile_avatar_manager.dart';
 import 'package:kairo/features/profile/widgets/profile_content.dart';
 import 'package:kairo/features/profile/widgets/profile_password_settings_sheet.dart';
 
@@ -60,7 +59,7 @@ class _ProfileBody extends StatelessWidget {
           ),
           ProfileContent(
             user: user,
-            onAvatarTap: () => _AvatarManager.show(context, user),
+            onAvatarTap: () => ProfileAvatarManager.show(context, user),
             onChangePassword: () => _openPasswordSettings(context, user),
             onDeleteAccount: () => _deleteAccount(context),
             onEditAccount: () => _openAccountSettings(context, user),
@@ -134,51 +133,5 @@ class _ProfileBody extends StatelessWidget {
 
   Future<void> _deleteAccount(BuildContext context) async {
     await deleteProfileAccount(context: context);
-  }
-}
-
-class _AvatarManager extends StatefulWidget {
-  final LocalUser user;
-
-  const _AvatarManager({required this.user});
-
-  static Future<void> show(BuildContext context, LocalUser user) async {
-    await showProfileAvatarActions(
-      context: context,
-      imagePicker: ImagePicker(),
-      onBusyChanged: (_) {},
-      user: user,
-    );
-  }
-
-  @override
-  State<_AvatarManager> createState() => _AvatarManagerState();
-}
-
-class _AvatarManagerState extends State<_AvatarManager> {
-  final ImagePicker _imagePicker = ImagePicker();
-  bool _isAvatarBusy = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _isAvatarBusy ? null : () => _showAvatarActions(context),
-      child: widget.user.avatarUrl != null
-          ? CircleAvatar(
-              backgroundImage: NetworkImage(widget.user.avatarUrl!),
-            )
-          : const CircleAvatar(child: Icon(Icons.person)),
-    );
-  }
-
-  Future<void> _showAvatarActions(BuildContext context) async {
-    await showProfileAvatarActions(
-      context: context,
-      imagePicker: _imagePicker,
-      onBusyChanged: (busy) {
-        if (mounted) setState(() => _isAvatarBusy = busy);
-      },
-      user: widget.user,
-    );
   }
 }
