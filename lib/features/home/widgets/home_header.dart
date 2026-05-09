@@ -7,11 +7,13 @@ class HomeHeader extends StatelessWidget {
   final int? batteryPercent;
   final DateTime now;
   final LocalUser? user;
+  final VoidCallback? onSecretTap;
 
   const HomeHeader({
     required this.now,
     required this.user,
     this.batteryPercent,
+    this.onSecretTap,
     super.key,
   });
 
@@ -23,24 +25,28 @@ class HomeHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hello, $firstName.',
-              style: TextStyle(
-                fontSize: context.sp(24),
-                fontWeight: FontWeight.w900,
+        GestureDetector(
+          onTap: onSecretTap,
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hello, $firstName.',
+                style: TextStyle(
+                  fontSize: context.sp(24),
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-            ),
-            Text(
-              _formatToday(now),
-              style: TextStyle(
-                color: const Color(0xFF9EA0AE),
-                fontSize: context.sp(13),
+              Text(
+                _formatToday(now),
+                style: TextStyle(
+                  color: const Color(0xFF9EA0AE),
+                  fontSize: context.sp(13),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         Transform.scale(
           scale: 0.9,
@@ -57,7 +63,10 @@ class HomeHeader extends StatelessWidget {
 
   String _firstName(String fullName) {
     final parts = fullName.trim().split(RegExp(r'\s+'));
-    return parts.firstWhere((part) => part.isNotEmpty, orElse: () => 'Guest');
+    return parts.firstWhere(
+      (part) => part.isNotEmpty,
+      orElse: () => 'Guest',
+    );
   }
 
   String _formatToday(DateTime date) {
