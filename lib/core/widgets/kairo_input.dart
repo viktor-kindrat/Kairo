@@ -54,7 +54,6 @@ class _KairoInputState extends State<KairoInput> {
           color: AppColors.textLight,
           fontSize: context.sp(16),
         ),
-
         suffixIcon: widget.isPassword
             ? IconButton(
                 iconSize: context.sp(24),
@@ -64,14 +63,9 @@ class _KairoInputState extends State<KairoInput> {
                       : Icons.visibility_outlined,
                   color: AppColors.textLight,
                 ),
-                onPressed: () {
-                  setState(() {
-                    _isObscured = !_isObscured;
-                  });
-                },
+                onPressed: () => setState(() => _isObscured = !_isObscured),
               )
             : null,
-
         filled: true,
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(
@@ -84,7 +78,8 @@ class _KairoInputState extends State<KairoInput> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(context.sp(16)),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide:
+              const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorText: widget.errorText,
         errorBorder: OutlineInputBorder(

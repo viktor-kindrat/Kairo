@@ -17,7 +17,8 @@ class HomeActivityCalculator {
     String? errorMessage,
     RealtimeTelemetryHistoryItem? latestEvent,
   }) {
-    final sortedPresets = _sortedPresets(presets);
+    final sortedPresets = [...presets]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     final durations = {
       for (final preset in sortedPresets) preset.id: Duration.zero,
     };
@@ -143,9 +144,5 @@ class HomeActivityCalculator {
     return [...events]..sort((a, b) {
       return a.entry.receivedAt.compareTo(b.entry.receivedAt);
     });
-  }
-
-  List<StatusPreset> _sortedPresets(List<StatusPreset> presets) {
-    return [...presets]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   }
 }

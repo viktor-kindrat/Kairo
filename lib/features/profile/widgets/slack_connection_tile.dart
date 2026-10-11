@@ -1,130 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
+import 'package:kairo/features/profile/cubit/slack_cubit.dart';
+import 'package:kairo/features/profile/cubit/slack_state.dart';
 import 'package:kairo/features/profile/models/slack_connection_status.dart';
-import 'package:kairo/features/profile/repositories/slack_connection_repository.dart';
 import 'package:kairo/features/profile/widgets/profile_account_row.dart';
 import 'package:kairo/features/profile/widgets/slack_connection_action_button.dart';
 
-class SlackConnectionTile extends StatefulWidget {
+class SlackConnectionTile extends StatelessWidget {
   const SlackConnectionTile({super.key});
 
   @override
-  State<SlackConnectionTile> createState() => _SlackConnectionTileState();
-}
-
-class _SlackConnectionTileState extends State<SlackConnectionTile>
-    with WidgetsBindingObserver {
-  final SlackConnectionRepository _repository = SlackConnectionRepository();
-
-  SlackConnectionStatus _status = const SlackConnectionStatus(connected: false);
-  bool _isBusy = false;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _loadStatus();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _loadStatus();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ProfileAccountRow(
-      backgroundTint: const Color(0xFFF5EEFF),
-      borderTint: const Color(0xFFE0CCFF),
-      iconColor: const Color(0xFF6B4EFF),
-      icon: Icons.link_rounded,
-      title: _status.connected ? 'Slack connected' : 'Connect Slack',
-      subtitle: _isLoading ? 'Checking Slack connection...' : _status.subtitle,
-      trailing: SlackConnectionActionButton(
-        connected: _status.connected,
-        isBusy: _isBusy || _isLoading,
-        onPressed: _handleAction,
-      ),
+    return BlocConsumer<SlackCubit, SlackState>(
+      listenWhen: (_, current) => current is SlackError,
+      listener: (context, state) {
+        if (state is SlackError) {
+          context.showErrorSnackBar(state.message);
+        }
+      },
+      builder: (context, state) {
+        final status = _statusFrom(state);
+        final isBusy = state is SlackLoading ||
+            state is SlackBusy ||
+            state is SlackInitial;
+
+        return ProfileAccountRow(
+          backgroundTint: const Color(0xFFF5EEFF),
+          borderTint: const Color(0xFFE0CCFF),
+          iconColor: const Color(0xFF6B4EFF),
+          icon: Icons.link_rounded,
+          title: status.connected ? 'Slack connected' : 'Connect Slack',
+          subtitle: isBusy && state is! SlackBusy
+              ? 'Checking Slack connection...'
+              : status.subtitle,
+          trailing: SlackConnectionActionButton(
+            connected: status.connected,
+            isBusy: isBusy,
+            onPressed: () => _handleAction(context, status.connected),
+          ),
+        );
+      },
     );
   }
 
-  Future<void> _handleAction() async {
-    if (_status.connected) {
-      await _disconnect();
-      return;
-    }
+  SlackConnectionStatus _statusFrom(SlackState state) => switch (state) {
+    SlackLoaded(:final status) => status,
+    SlackBusy(:final status) => status,
+    _ => const SlackConnectionStatus(connected: false),
+  };
 
-    await _connect();
-  }
-
-  Future<void> _connect() async {
-    await _runBusyAction(() async {
-      await _repository.connect();
-
-      if (!mounted) {
-        return;
-      }
-
-      context.showSuccessSnackBar('Finish Slack authorization in browser.');
-    });
-  }
-
-  Future<void> _disconnect() async {
-    await _runBusyAction(() async {
-      await _repository.disconnect();
-      await _loadStatus();
-
-      if (mounted) {
-        context.showSuccessSnackBar('Slack disconnected.');
-      }
-    });
-  }
-
-  Future<void> _loadStatus() async {
-    try {
-      final status = await _repository.getStatus();
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isLoading = false;
-        _status = status;
-      });
-    } catch (_) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  Future<void> _runBusyAction(Future<void> Function() action) async {
-    if (_isBusy) {
-      return;
-    }
-
-    setState(() => _isBusy = true);
-
-    try {
-      await action();
-    } on SlackConnectionException catch (error) {
-      if (mounted) {
-        context.showErrorSnackBar(error.message);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isBusy = false);
-      }
+  void _handleAction(BuildContext context, bool isConnected) {
+    if (isConnected) {
+      context.read<SlackCubit>().disconnect();
+    } else {
+      context.read<SlackCubit>().connect();
     }
   }
 }

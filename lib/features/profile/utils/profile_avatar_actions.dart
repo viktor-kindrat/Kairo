@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kairo/core/contexts/auth_context.dart';
 import 'package:kairo/core/models/local_user.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
+import 'package:kairo/features/auth/cubit/auth_cubit.dart';
 import 'package:kairo/features/profile/utils/profile_avatar_storage.dart';
 import 'package:kairo/features/profile/widgets/profile_avatar_actions_sheet.dart';
 
@@ -38,27 +39,20 @@ Future<void> removeProfileAvatar(
   LocalUser user,
   ValueChanged<bool> onBusyChanged,
 ) async {
-  final authController = context.auth;
-
+  final authCubit = context.read<AuthCubit>();
   onBusyChanged(true);
 
   try {
-    await authController.updateAvatar(null);
+    await authCubit.updateAvatar(null);
     await ProfileAvatarStorage.deleteAvatar(user.avatarUrl);
   } catch (error) {
-    if (context.mounted) {
-      context.showErrorSnackBar(error.toString());
-    }
-
+    if (context.mounted) context.showErrorSnackBar(error.toString());
     return;
   } finally {
     onBusyChanged(false);
   }
 
-  if (!context.mounted) {
-    return;
-  }
-
+  if (!context.mounted) return;
   context.showSuccessSnackBar('Profile picture removed.');
 }
 
@@ -74,26 +68,19 @@ Future<void> _pickAvatarImage(
     maxWidth: 1200,
   );
 
-  if (pickedFile == null) {
-    return;
-  }
+  if (pickedFile == null) return;
 
   final previousAvatarUrl = user.avatarUrl;
-  // Timestamped names avoid stale image cache; a later cleanup job can remove
-  // rare orphan objects after app crashes or interrupted profile saves.
   onBusyChanged(true);
 
   final String uploadedAvatarUrl;
 
   try {
-    uploadedAvatarUrl = await ProfileAvatarStorage.uploadAvatar(pickedFile);
+    uploadedAvatarUrl =
+        await ProfileAvatarStorage.uploadAvatar(pickedFile);
   } catch (error) {
     onBusyChanged(false);
-
-    if (context.mounted) {
-      context.showErrorSnackBar(error.toString());
-    }
-
+    if (context.mounted) context.showErrorSnackBar(error.toString());
     return;
   }
 
@@ -103,25 +90,19 @@ Future<void> _pickAvatarImage(
     return;
   }
 
+  final authCubit = context.read<AuthCubit>();
+
   try {
-    await context.auth.updateAvatar(uploadedAvatarUrl);
+    await authCubit.updateAvatar(uploadedAvatarUrl);
     await ProfileAvatarStorage.deleteAvatar(previousAvatarUrl);
   } catch (error) {
     await ProfileAvatarStorage.deleteAvatar(uploadedAvatarUrl);
-
-    if (!context.mounted) {
-      return;
-    }
-
-    context.showErrorSnackBar(error.toString());
+    if (context.mounted) context.showErrorSnackBar(error.toString());
     return;
   } finally {
     onBusyChanged(false);
   }
 
-  if (!context.mounted) {
-    return;
-  }
-
+  if (!context.mounted) return;
   context.showSuccessSnackBar('Profile picture updated.');
 }
