@@ -1,4 +1,9 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kairo/core/contexts/auth_context.dart';
+import 'package:kairo/core/contexts/status_context.dart';
 import 'package:kairo/core/theme/app_colors.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
@@ -15,12 +20,16 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  static int _lastSelectedIndex = 0;
+
   final MqttService _mqttService = MqttService.instance;
-  int _selectedIndex = 0;
+  late int _selectedIndex = _lastSelectedIndex;
+  bool _isSeedingStatuses = false;
+  String? _seededStatusUid;
 
   late final List<Widget> _screens = [
     const HomeScreen(),
-    AnalyticsScreen(),
+    const AnalyticsScreen(),
     const ProfileScreen(),
   ];
 
@@ -30,10 +39,23 @@ class _MainScreenState extends State<MainScreen> {
     _initializeMqtt();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _ensureCurrentUserStatuses();
+  }
+
   Future<void> _initializeMqtt() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      debugPrint('MQTT init skipped: no authenticated Firebase user.');
+      return;
+    }
+
     try {
       await _mqttService.connect();
-      _mqttService.subscribe(MqttService.defaultTopic);
+      _mqttService.subscribe(MqttService.topicForUser(uid));
     } catch (error) {
       debugPrint('MQTT init error: $error');
 
@@ -51,6 +73,36 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  void _ensureCurrentUserStatuses() {
+    final currentUser = context.auth.currentUser;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (currentUser == null ||
+        uid == null ||
+        _seededStatusUid == uid ||
+        _isSeedingStatuses) {
+      return;
+    }
+
+    _isSeedingStatuses = true;
+    unawaited(_loadOrSeedStatuses(uid));
+  }
+
+  Future<void> _loadOrSeedStatuses(String uid) async {
+    try {
+      await context.statuses.loadOrSeedDefaults();
+      _seededStatusUid = uid;
+    } catch (error) {
+      debugPrint('Could not seed status presets: $error');
+
+      if (mounted) {
+        context.showErrorSnackBar('Could not create cube statuses.');
+      }
+    } finally {
+      _isSeedingStatuses = false;
+    }
+  }
+
   @override
   void dispose() {
     _mqttService.disconnect();
@@ -58,6 +110,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
+    _lastSelectedIndex = index;
     setState(() => _selectedIndex = index);
   }
 

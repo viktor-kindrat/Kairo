@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:kairo/core/contracts/status_preset.contracts.dart';
+import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/models/status_preset.dart';
-import 'package:kairo/features/home/utils/status_preset_icons.dart';
+import 'package:kairo/core/utils/uuid_v4.dart';
+import 'package:kairo/features/home/models/cube_status_definition.dart';
 
 class StatusController extends ChangeNotifier {
   final IStatusPresetRepository _statusPresetRepository;
@@ -19,56 +21,24 @@ class StatusController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> create({required String label, required String iconKey}) async {
-    final preset = StatusPreset(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
-      label: label.trim(),
-      iconKey: iconKey,
-      isActive: _presets.isEmpty,
-    );
-
-    _presets = await _statusPresetRepository.create(preset);
-    notifyListeners();
+  Future<void> create({
+    required String label,
+    required String slackEmojiCode,
+  }) async {
+    throw const StatusPresetException('Custom statuses are not supported yet.');
   }
 
   Future<void> loadOrSeedDefaults() async {
     final storedPresets = await _statusPresetRepository.getAll();
+    final normalizedPresets = _normalizePresets(storedPresets);
 
-    if (storedPresets.isNotEmpty) {
-      _presets = storedPresets;
-      notifyListeners();
-      return;
-    }
-
-    List<StatusPreset> seededPresets = const [];
-
-    for (final (index, option) in statusIconOptions.take(6).indexed) {
-      seededPresets = await _statusPresetRepository.create(
-        StatusPreset(
-          id: 'default_${option.key}',
-          label: option.label,
-          iconKey: option.key,
-          isActive: index == 0,
-        ),
-      );
-    }
-
-    _presets = seededPresets;
+    _presets = await _statusPresetRepository.replaceAll(normalizedPresets);
+    _presets = _sortedPresets(_presets);
     notifyListeners();
   }
 
   Future<void> remove(String presetId) async {
-    var updatedPresets = await _statusPresetRepository.delete(presetId);
-
-    if (updatedPresets.isNotEmpty &&
-        !updatedPresets.any((preset) => preset.isActive)) {
-      updatedPresets = await _statusPresetRepository.setActive(
-        updatedPresets.first.id,
-      );
-    }
-
-    _presets = updatedPresets;
-    notifyListeners();
+    throw const StatusPresetException('Cube face statuses cannot be removed.');
   }
 
   Future<void> setActive(String presetId) async {
@@ -79,15 +49,49 @@ class StatusController extends ChangeNotifier {
   Future<void> update({
     required String presetId,
     required String label,
-    required String iconKey,
+    required String slackEmojiCode,
   }) async {
-    final existingPreset = _presets.firstWhere(
-      (preset) => preset.id == presetId,
-    );
+    throw const StatusPresetException('Custom statuses are not supported yet.');
+  }
 
-    _presets = await _statusPresetRepository.update(
-      existingPreset.copyWith(label: label.trim(), iconKey: iconKey),
-    );
-    notifyListeners();
+  List<StatusPreset> _normalizePresets(List<StatusPreset> storedPresets) {
+    final storedByFace = {
+      for (final preset in storedPresets)
+        if (_knownCubeFaces.contains(preset.cubeFace)) preset.cubeFace: preset,
+    };
+    final activeFace = _activeCubeFace(storedPresets);
+
+    return defaultCubeStatusDefinitions
+        .map((definition) {
+          final storedPreset = storedByFace[definition.cubeFace];
+          final storedId = storedPreset?.id ?? '';
+          final statusId = isUuid(storedId) ? storedId : uuidV4();
+
+          return definition.toPreset(
+            id: statusId,
+            isActive: definition.cubeFace == activeFace,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  String _activeCubeFace(List<StatusPreset> presets) {
+    for (final preset in presets) {
+      if (preset.isActive && _knownCubeFaces.contains(preset.cubeFace)) {
+        return preset.cubeFace;
+      }
+    }
+
+    return defaultCubeStatusDefinitions.first.cubeFace;
+  }
+
+  Set<String> get _knownCubeFaces {
+    return defaultCubeStatusDefinitions
+        .map((definition) => definition.cubeFace)
+        .toSet();
+  }
+
+  List<StatusPreset> _sortedPresets(List<StatusPreset> presets) {
+    return [...presets]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   }
 }

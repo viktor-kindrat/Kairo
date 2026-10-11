@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 
 class FocusProgressItem extends StatelessWidget {
+  final String emoji;
   final String label;
   final String time;
   final double progress; // 0.0 - 1.0
   final Color color;
 
   const FocusProgressItem({
+    required this.emoji,
     required this.label,
     required this.time,
     required this.progress,
@@ -24,13 +26,25 @@ class FocusProgressItem extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: context.sp(13),
+              Expanded(
+                child: Row(
+                  children: [
+                    Text(emoji, style: TextStyle(fontSize: context.sp(14))),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        label,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: context.sp(13),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(width: 12),
               Text(
                 time,
                 style: TextStyle(

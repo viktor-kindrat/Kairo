@@ -23,6 +23,12 @@ class LocalStatusPresetRepository implements IStatusPresetRepository {
   }
 
   @override
+  Future<List<StatusPreset>> replaceAll(List<StatusPreset> presets) async {
+    await _saveAll(presets);
+    return presets;
+  }
+
+  @override
   Future<List<StatusPreset>> delete(String presetId) async {
     final presets = await getAll();
     final updatedPresets = presets

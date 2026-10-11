@@ -32,5 +32,7 @@
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:498359023979:ios:eca8836e8c07547ae3342e</string>
+	<key>DATABASE_URL</key>
+	<string>https://kairo-status-hub-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>

@@ -5,14 +5,14 @@ class LocalUser {
   final String email;
   final String password;
   final String roleTitle;
-  final String? avatarPath;
+  final String? avatarUrl;
 
   const LocalUser({
     required this.fullName,
     required this.email,
     required this.password,
     required this.roleTitle,
-    this.avatarPath,
+    this.avatarUrl,
   });
 
   LocalUser copyWith({
@@ -20,15 +20,15 @@ class LocalUser {
     String? email,
     String? password,
     String? roleTitle,
-    String? avatarPath,
-    bool clearAvatarPath = false,
+    String? avatarUrl,
+    bool clearAvatarUrl = false,
   }) {
     return LocalUser(
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       password: password ?? this.password,
       roleTitle: roleTitle ?? this.roleTitle,
-      avatarPath: clearAvatarPath ? null : avatarPath ?? this.avatarPath,
+      avatarUrl: clearAvatarUrl ? null : avatarUrl ?? this.avatarUrl,
     );
   }
 
@@ -38,17 +38,19 @@ class LocalUser {
       'email': email,
       'password': password,
       'roleTitle': roleTitle,
-      'avatarPath': avatarPath,
+      'avatarUrl': avatarUrl,
     };
   }
 
   factory LocalUser.fromMap(Map<String, dynamic> map) {
+    final avatarUrl = map['avatarUrl'] ?? map['avatarPath'];
+
     return LocalUser(
       fullName: map['fullName'] as String? ?? '',
       email: map['email'] as String? ?? '',
       password: map['password'] as String? ?? '',
       roleTitle: map['roleTitle'] as String? ?? '',
-      avatarPath: map['avatarPath'] as String?,
+      avatarUrl: avatarUrl as String?,
     );
   }
 

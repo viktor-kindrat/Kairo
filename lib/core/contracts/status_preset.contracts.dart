@@ -5,6 +5,8 @@ abstract class IStatusPresetRepository {
 
   Future<List<StatusPreset>> create(StatusPreset preset);
 
+  Future<List<StatusPreset>> replaceAll(List<StatusPreset> presets);
+
   Future<List<StatusPreset>> update(StatusPreset preset);
 
   Future<List<StatusPreset>> delete(String presetId);

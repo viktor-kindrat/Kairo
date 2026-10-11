@@ -4,10 +4,9 @@ import 'package:kairo/core/exceptions/app_exceptions.dart';
 import 'package:kairo/core/utils/auth_validators.dart';
 import 'package:kairo/core/utils/responsive_utils.dart';
 import 'package:kairo/core/utils/snackbar_extensions.dart';
-import 'package:kairo/core/widgets/app_email_input.dart';
-import 'package:kairo/core/widgets/kairo_input.dart';
-import 'package:kairo/core/widgets/password_pair_fields.dart';
+import 'package:kairo/features/auth/utils/auth_google_submitter.dart';
 import 'package:kairo/features/auth/widgets/auth_action_section.dart';
+import 'package:kairo/features/auth/widgets/sign_up_fields.dart';
 
 class SignUpForm extends StatefulWidget {
   final VoidCallback onSwitchTab;
@@ -29,7 +28,6 @@ class _SignUpFormState extends State<SignUpForm> {
   String? _emailError;
   String? _passwordError;
   String? _confirmPasswordError;
-  String? _formError;
   bool _isLoading = false;
   bool _isGoogleLoading = false;
 
@@ -47,7 +45,6 @@ class _SignUpFormState extends State<SignUpForm> {
       _emailError = emailError;
       _passwordError = passwordError;
       _confirmPasswordError = confirmPasswordError;
-      _formError = null;
     });
 
     if ([
@@ -74,9 +71,6 @@ class _SignUpFormState extends State<SignUpForm> {
         return;
       }
 
-      setState(() {
-        _formError = null;
-      });
       context.showErrorSnackBar(error.message);
     } finally {
       if (mounted) {
@@ -88,47 +82,20 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   Future<void> _submitGoogleSignIn() async {
-    if (_isLoading || _isGoogleLoading) {
-      return;
-    }
-
-    setState(() {
-      _formError = null;
-      _isGoogleLoading = true;
-    });
-
-    try {
-      await context.auth.signInWithGoogle();
-    } on AuthException catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      context.showErrorSnackBar(error.message);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isGoogleLoading = false;
-        });
-      }
-    }
+    await submitGoogleSignIn(
+      context: context,
+      isBusy: () => _isLoading || _isGoogleLoading,
+      onStart: () => setState(() => _isGoogleLoading = true),
+      onComplete: () => setState(() => _isGoogleLoading = false),
+    );
   }
 
   void _clearErrors() {
-    if (_formError == null &&
-        _fullNameError == null &&
-        _emailError == null &&
-        _passwordError == null &&
-        _confirmPasswordError == null) {
-      return;
-    }
-
     setState(() {
       _fullNameError = null;
       _emailError = null;
       _passwordError = null;
       _confirmPasswordError = null;
-      _formError = null;
     });
   }
 
@@ -146,31 +113,16 @@ class _SignUpFormState extends State<SignUpForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          spacing: context.sp(16),
-          children: [
-            KairoInput(
-              controller: _fullNameController,
-              hintText: 'Full Name',
-              keyboardType: TextInputType.name,
-              errorText: _fullNameError,
-              onChanged: (_) => _clearErrors(),
-            ),
-            AppEmailInput(
-              controller: _emailController,
-              errorText: _emailError,
-              onChanged: (_) => _clearErrors(),
-            ),
-            PasswordPairFields(
-              passwordController: _passwordController,
-              confirmPasswordController: _confirmPasswordController,
-              passwordError: _passwordError,
-              confirmPasswordError: _confirmPasswordError,
-              confirmPasswordHintText: 'Confirm password',
-              onPasswordChanged: (_) => _clearErrors(),
-              onConfirmPasswordChanged: (_) => _clearErrors(),
-            ),
-          ],
+        SignUpFields(
+          confirmPasswordController: _confirmPasswordController,
+          confirmPasswordError: _confirmPasswordError,
+          emailController: _emailController,
+          emailError: _emailError,
+          fullNameController: _fullNameController,
+          fullNameError: _fullNameError,
+          onChanged: (_) => _clearErrors(),
+          passwordController: _passwordController,
+          passwordError: _passwordError,
         ),
         SizedBox(height: context.sp(24)),
         AuthActionSection(
@@ -181,7 +133,6 @@ class _SignUpFormState extends State<SignUpForm> {
           secondaryButtonText: _isGoogleLoading
               ? 'Connecting Google...'
               : 'Continue with Google',
-          formError: _formError,
           footerMessage: 'Already have an account? ',
           footerActionText: 'Log In',
           onFooterTap: widget.onSwitchTab,
