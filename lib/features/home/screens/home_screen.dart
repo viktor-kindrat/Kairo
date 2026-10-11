@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kairo/core/theme/app_colors.dart';
+import 'package:kairo/core/utils/snackbar_extensions.dart';
 import 'package:kairo/core/widgets/kairo_section_header.dart';
 import 'package:kairo/features/auth/cubit/auth_cubit.dart';
 import 'package:kairo/features/auth/cubit/auth_state.dart';
@@ -17,6 +19,7 @@ import 'package:kairo/features/home/widgets/focus_summary_section.dart';
 import 'package:kairo/features/home/widgets/home_header.dart';
 import 'package:kairo/features/home/widgets/home_timer_card.dart';
 import 'package:kairo/features/profile/widgets/slack_required_banner.dart';
+import 'package:kairo_torch_plugin/kairo_torch_plugin.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,6 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late final HomeActivityCubit _activityCubit;
   Timer? _timer;
   DateTime _now = DateTime.now();
+
+  bool _torchOn = false;
+  int _secretTapCount = 0;
+  Timer? _secretTapTimer;
 
   @override
   void initState() {
@@ -53,8 +60,39 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _secretTapTimer?.cancel();
     _activityCubit.close();
     super.dispose();
+  }
+
+  void _onHeaderTap() {
+    _secretTapTimer?.cancel();
+    _secretTapCount++;
+    if (_secretTapCount >= 5) {
+      _secretTapCount = 0;
+      unawaited(_toggleTorch());
+      return;
+    }
+    _secretTapTimer = Timer(
+      const Duration(milliseconds: 800),
+      () => _secretTapCount = 0,
+    );
+  }
+
+  Future<void> _toggleTorch() async {
+    try {
+      await KairoTorchPlugin.toggle();
+      if (!mounted) return;
+      setState(() => _torchOn = !_torchOn);
+      context.showSuccessSnackBar(
+        _torchOn ? 'Torch on' : 'Torch off',
+      );
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      context.showErrorSnackBar(
+        e.message ?? 'Could not control flashlight.',
+      );
+    }
   }
 
   @override
@@ -108,6 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       batteryPercent: activity.latestBatteryPercent,
                       now: activity.now,
                       user: user,
+                      onSecretTap: _onHeaderTap,
                     ),
                     const SizedBox(height: 20),
                     const SlackRequiredBanner(),
